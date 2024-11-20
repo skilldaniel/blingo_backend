@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="minimal-ui,width=device-width,initial-scale=1,maximum-scale=1,user-scalable=0,shrink-to-fit=no">
+    <link rel="stylesheet" href="./1.2.4/css/main.css">
+    <link rel="stylesheet" href="./1.2.4/css/game.css">
+</head>
+<body>
+<div id="game-grid">
+    <div id="game-column">
+        <div id="game-holder">
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="./1.2.4/bin/starburst.min.js"></script>
+<script type="text/javascript">
+    var version = "1.2.4";
+    var releaseVersion = "1.0.5";
+    var brand,app;
+    function createGame() {
+        brand = new rogue.gmr.starburst.Starburst(version, createApp);
+    }
+    function createApp() {
+        app = new rogue.App(version,releaseVersion);
+    }
+    createGame();
+</script>
+</body>
+</html>
+
