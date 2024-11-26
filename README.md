@@ -8,8 +8,8 @@ node 20.12.0
 
 #### Step 1: 🚀 Initial Setup
 
-- Clone the repository: `git clone https://github.com/edwinhern/express-typescript-2024.git`
-- Navigate: `cd express-typescript-2024`
+- Clone the repository: `git clone https://github.com/skilldaniel/blingo_backend.git`
+- Navigate: `cd blingo_backend`
 - Install dependencies: `npm ci`
 
 #### Step 2: ⚙️ Environment Configuration

@@ -24,3 +24,22 @@ export const ERRORDESCRIPTION : {[key: number]: string} = {
     310 : "Player's bet is out of his bet limits.",
     401 : "Unauthorized access",
 }
+
+export const GAMEINFO = {
+    actions : [ "SPIN", "CHOOSE_CELL" ],
+    payTable : {
+        pgCnt : [ 2.5, 1, 0.5 ],
+        
+    },
+    slotPayLine : {
+        1 : [  ],
+        2 : [  ],
+        3 : [  ],
+        4 : [  ],
+        5 : [  ],
+        6 : [  ],
+        7 : [  ],
+        8 : [  ],
+        9 : [  ],
+    }
+}

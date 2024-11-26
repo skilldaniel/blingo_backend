@@ -26,10 +26,9 @@ connect(String(process.env.DBNAME)).then(async (loaded) => {
         app.use(express.json());
         app.use(express.urlencoded({ extended: true }));
         app.use("/rgs", Routers.rgsRouter);
-        app.use("/api/gamestudio/rogue/starburst", Routers.gameRouter);
-        app.use("/gamecloud-servlets", Routers.cloudRouter);
         app.use("/config-hub", Routers.configRouter);
-        // gamecloud-servlets/api/user/realityCheckDetails
+        app.use("/gamecloud-servlets", Routers.cloudRouter);
+        app.use("/api/gamestudio/rogue/starburst", Routers.gameRouter);
 
         app.use(errorHandler());
     }
