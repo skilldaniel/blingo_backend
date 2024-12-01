@@ -24,30 +24,18 @@ const symbolsArr = [
     ["1", "RJ", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], 
     ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"],
     ["12", "J", "45", "51", "64"], ["5", "26", "D", "58", "75"], ["11", "17", "38", "J", "69"], 
-    ["3", "30", "31", "56", "74"], ["13", "27", "PG", "60", "70"], [],
+    ["3", "30", "31", "56", "74"], 
+    // FREE_PURCHASE_SPIN
+    ["13", "27", "PG", "60", "70"], [],
     ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], ["11", "23", "43", "52", "68"], 
-    ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  ["9", "30", "PG", "J", "72"],
-    ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], ["5", "16", "36", "49", "74"], 
-    ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], ["J", "16", "35", "57", "J"],
-    ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], ["4", "22", "PG", "D", "69"], 
-    ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], ["13", "18", "37", "53", "68"],
+    ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
+    // purchase
+    ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], 
+    ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], 
+    ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], 
+    ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], 
+    ["13", "18", "37", "53", "68"],
 ];
-
-const generateMatchePatterns = ( matchesArr:number[], cells:number[] ) => {
-    const matches : any[] = [];
-    console.log("matchesArr ::", matchesArr);
-    if( matchesArr.length > 0 ) {
-        matchesArr.forEach(( no:number, idx:number ) => {
-            const matchItem = {
-                number : cells[ no ],
-                pattern : []
-            };
-            matches.push( matchItem );
-        });
-    }
-
-    return matches;
-}
 
 export const getCells = () => {
     const cells = cellsArr[ cid ];
@@ -61,6 +49,54 @@ export const getSymbols = () => {
     return symbols;
 }
 
+export const generateMatchePatterns = ( matchesArr:number[], cells:number[], patternInfo:any ) => {
+    const matches : any[] = [];
+    if( matchesArr.length > 0 ) {
+        matchesArr.forEach(( no:number, idx:number ) => {
+            let pattern : number[] = [];
+            patternInfo.forEach((element:any) => {
+                if( no === element.number ) {
+                    pattern.push( element.patterns );
+                }
+            });
+            const matchItem = {
+                number : cells[ no ],
+                pattern : pattern
+            };
+            matches.push( matchItem );
+        });
+    }
+
+    return matches;
+}
+
+export const checkSlingoWinLines = ( gameMatches:number[], spinMatches : number[] ) => {
+    const patterns : number[] = [];
+    const patternInfo : any[] = [];
+    if( gameMatches.length>5 ) {
+        for( const key in Contants.SLINGOWINLINES ) {
+            const winLine = Contants.SLINGOWINLINES[key];
+            spinMatches.forEach(( idx:number ) => {
+                if( winLine.includes( idx )) {
+                    const isPattern = winLine.every( element => gameMatches.includes(element) );
+                    if( isPattern ) {
+                        patterns.push( Number(key) );
+                        const patternItem = {
+                            number : idx,
+                            patterns : Number(key)
+                        };
+                        patternInfo.push( patternItem );
+                    }
+                }
+            })
+        }
+    }
+    return {
+        patterns : patterns,
+        patternInfo : patternInfo
+    };
+}
+
 export const getIdxMatchedSymbol = ( cells:number[], symbols:string[] ) => {
     const matches : number[] = [];
     symbols.forEach((symbol:string) => {
@@ -71,7 +107,6 @@ export const getIdxMatchedSymbol = ( cells:number[], symbols:string[] ) => {
             }
         }
     });
-    console.log("matches symbols :: ", matches );
     return matches ;
 }
 
@@ -121,18 +156,20 @@ export const generateStartGameResponse = (params: any) => {
 }
 
 export const generateSpinResponse = (params: any) => {
-    const matches = generateMatchePatterns( params.spinMatches, params.cells );
+    const gameInfo = params.gameInfo;
+    const matches = generateMatchePatterns( gameInfo.spinMatches, gameInfo.cells, params.patternInfo );
     const spinTypes = [ "STANDARD", "RESPIN", "FREE_PURCHASE", "PURCHASE" ];
+    const stateTypes = [ "STANDARD_SPIN", "FREE_PURCHASE_SPIN", "PURCHASE_SPIN" ];
     const response = {
         "game": {
             "userId": params.userId,
             "gameInstanceId": params.gameInstanceId,
             "currencyCode": params.currency,
             "state": "STANDARD_SPIN",
-            "action": Contants.GAMEINFO.actions[ params.actionFlag ],
-            "stake": params.stake,
+            "action": Contants.ACTIONS[ params.actionFlag ],
+            "stake": gameInfo.stake,
             "totalStake": 0.5,
-            "spinsRemaining": 10,
+            "spinsRemaining": gameInfo.spinsRemaining,
             "freeSpinsRemaining": 0,
             "freePurchaseSpinsRemaining": 5,
             "purchaseSpinsRemaining": 40,
@@ -140,23 +177,23 @@ export const generateSpinResponse = (params: any) => {
             "freePurchaseSpinsAwarded": 0,
             "spin": {
                 "type": "STANDARD",
-                "symbols": params.symbols,
-                "jokerIndexes": params.jokerIndexes,
-                "jokerCells": params.jokerCells ,
+                "symbols": gameInfo.symbols,
+                "jokerIndexes": gameInfo.jokerIndexes,
+                "jokerCells": gameInfo.jokerCells ,
                 "superJokerIndexes": [],
                 "superJokerCells": [],
-                "respinIndexes": params.respinIndexes,
+                "respinIndexes": gameInfo.respinIndexes,
                 "matches": matches,
-                "symbolWins": [],
-                "totalSymbolWin": 0,
+                "symbolWins": params.symbolWinsInfo.length > 0 ? params.symbolWinsInfo : [],
+                "totalSymbolWin": params.spinSymbolWin,
                 "purpleGemIndexes": params.purpleGemIndexes,
                 "freeSpinIndexes": []
             },
             "spinPrice": 0,
-            "matchedPatterns": 0,
+            "matchedPatterns": params.matchPatterns,
             "totalPatternWin": 0,
-            "totalSymbolWin": 0,
-            "totalWin": 0
+            "totalSymbolWin": gameInfo.totalSymbolWin,
+            "totalWin": gameInfo.totalWin
         },
         "response": 0
     }
@@ -165,17 +202,18 @@ export const generateSpinResponse = (params: any) => {
 }
 
 export const generateChooseCellResponse = ( params:any ) => {
-    const matches = generateMatchePatterns( params.spinMatches, params.cells );
+    const gameInfo = params.gameInfo;
+    const matches = generateMatchePatterns( gameInfo.spinMatches, gameInfo.cells, params.patternInfo );
     const response = {
         "game": {
             "userId": params.userId,
             "gameInstanceId": params.gameInstanceId,
             "currencyCode": params.currency,
             "state": "STANDARD_SPIN",
-            "action": Contants.GAMEINFO.actions[ params.actionFlag ],
-            "stake": params.stake,
+            "action": Contants.ACTIONS[ params.actionFlag ],
+            "stake": gameInfo.stake,
             "totalStake": 0.5,
-            "spinsRemaining": params.spinsRemaining,
+            "spinsRemaining": gameInfo.spinsRemaining,
             "freeSpinsRemaining": 0,
             "freePurchaseSpinsRemaining": 5,
             "purchaseSpinsRemaining": 40,
@@ -183,23 +221,23 @@ export const generateChooseCellResponse = ( params:any ) => {
             "freePurchaseSpinsAwarded": 0,
             "spin": {
                 "type": "STANDARD",
-                "symbols": params.symbols,
-                "jokerIndexes": params.jokerIndexes,
-                "jokerCells": params.jokerCells,
+                "symbols": gameInfo.symbols,
+                "jokerIndexes": gameInfo.jokerIndexes,
+                "jokerCells": gameInfo.jokerCells,
                 "superJokerIndexes": [],
                 "superJokerCells": [],
-                "respinIndexes": params.respinIndexes,
+                "respinIndexes": gameInfo.respinIndexes,
                 "matches": matches,
-                "symbolWins": [],
-                "totalSymbolWin": 0,
+                "symbolWins": params.symbolWinsInfo,
+                "totalSymbolWin": params.spinSymbolWin,
                 "purpleGemIndexes": params.purpleGemIndexes,
                 "freeSpinIndexes": []
             },
             "spinPrice": 0,
-            "matchedPatterns": 0,
+            "matchedPatterns": params.matchPatterns,
             "totalPatternWin": 0,
-            "totalSymbolWin": 0,
-            "totalWin": 0
+            "totalSymbolWin": gameInfo.totalSymbolWin,
+            "totalWin": gameInfo.totalWin
         },
         "response": 0
     }

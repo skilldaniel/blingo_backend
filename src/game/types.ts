@@ -13,3 +13,9 @@ export interface ProviderParamType {
     jurisdiction : string
     disallowPromos : string
 }
+
+export interface SymbolWinsType {
+    symbols : number
+    amount : number
+    type : string
+}

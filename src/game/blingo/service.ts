@@ -1,6 +1,7 @@
 import * as Models from "@/common/models";
 import * as Functions from "@/game/blingo/functions";
 import * as Constants from "@/game/blingo/constants";
+import * as Types from "@/game/types";
 
 const jokerSymbols = [ "D", "J", "RJ", "PG" ];
 let sid = 0;
@@ -15,10 +16,15 @@ export const blingoService = {
         console.log(`--------------------> action :: ${ action } ------------------------->`);
 
         let actionFlag = 0; // 0::SPIN, 1::CHOOSE_CELL,
-        let twMoney = 0;
+        let totalSymbolWin = 0;
         let response = {};
         let purpleGemIndexes : number[] = [];
-        
+        let symbolWinsInfo : Types.SymbolWinsType[] = [];
+        let slingoWinInfo = {
+            patterns : [] as number[],
+            patternInfo : [] as any[]
+        };
+
         if( symbols.length>0 ) {
             let isJoker = false;
             let pgCnt = 0;
@@ -41,7 +47,17 @@ export const blingoService = {
                 }
             })
             if( isJoker ) userInfo.gameStatus.isChoose = true;
-            if( pgCnt>=3 ) twMoney = Math.round( twMoney*100 + Constants.GAMEINFO.payTable["pgCnt"][5-pgCnt]*0.5*100 )
+            if( pgCnt>=3 ) {
+                totalSymbolWin = Math.round( totalSymbolWin*100 + Constants.PAYTABLE["pgCnt"][5-pgCnt]*0.5*100 )/100;
+                userInfo.gameStatus.totalSymbolWin = Math.round( userInfo.gameStatus.totalSymbolWin*100+totalSymbolWin*100 )/100;
+                userInfo.gameStatus.totalWin = Math.round( userInfo.gameStatus.totalWin*100+totalSymbolWin*100 )/100;
+                const symbolwinItem : Types.SymbolWinsType = {
+                    symbols : 3,
+                    amount : totalSymbolWin,
+                    type : Constants.SYMBOLTYPES[3]
+                };
+                symbolWinsInfo.push( symbolwinItem );
+            }
         }
 
         switch ( action ) {
@@ -75,31 +91,48 @@ export const blingoService = {
                 if( sid === 2 ) {
                     userInfo.gameStatus.respinIndexes = []
                 }
-                userInfo.gameStatus.spinsRemaining--;
-                userInfo.gameStatus.spinMatches = Functions.getIdxMatchedSymbol( userInfo.gameStatus.cells, symbols );
-                userInfo.gameStatus.gameMatches.push( ...userInfo.gameStatus.spinMatches );
+                userInfo.gameStatus.spinMatches.length = 0;
+
+                const matches = Functions.getIdxMatchedSymbol( userInfo.gameStatus.cells, symbols );
+                if( matches.length>0 ) {
+                    matches.forEach((matchPos:number) => {
+                        if( !userInfo.gameStatus.gameMatches.includes( matchPos ) ) {
+                            userInfo.gameStatus.gameMatches.push( matchPos );
+                            userInfo.gameStatus.spinMatches.push( matchPos );
+                        }
+                    });
+                    if( userInfo.gameStatus.spinMatches.length>0 ) {
+                        slingoWinInfo = Functions.checkSlingoWinLines( userInfo.gameStatus.gameMatches, userInfo.gameStatus.spinMatches );
+                        // if( slingoWinInfo.patterns.length>0 ) userInfo.gameStatus.matchPatterns.push( ...slingoWinInfo.patterns );
+                        if( slingoWinInfo.patterns.length>0 ) {
+                            userInfo.gameStatus.matchPatterns = new Set([ ...userInfo.gameStatus.matchPatterns, ...slingoWinInfo.patterns ]) ;
+                            userInfo.gameStatus.matchPatterns = Array.from( userInfo.gameStatus.matchPatterns );
+                        }
+                    }
+                }
+
                 userInfo.gameStatus.symbols = symbols;
+                if( userInfo.gameStatus.spinsRemaining === 0 ) {
+                    
+                }
                 const spinParams = {
-                    symbols     : userInfo.gameStatus.symbols,
-                    cells       : userInfo.gameStatus.cells,
-                    stake       : userInfo.gameStatus.stake,
-                    currency    : userInfo.property.currency,
-                    spinMatches : userInfo.gameStatus.spinMatches,
-                    gameMatches : userInfo.gameStatus.gameMatches,
-                    jokerCells  : userInfo.gameStatus.jokerCells,
-                    jokerIndexes    : userInfo.gameStatus.jokerIndexes,
-                    respinIndexes   : userInfo.gameStatus.respinIndexes,
                     actionFlag  : actionFlag,
                     userId      : actionParams.body.userId,
-                    gameInstanceId : actionParams.body.gameInstanceId,
-                    purpleGemIndexes : purpleGemIndexes,
+                    gameInstanceId  : actionParams.body.gameInstanceId,
+                    symbolWinsInfo  : symbolWinsInfo,
+                    spinSymbolWin   : totalSymbolWin,
+                    purpleGemIndexes: purpleGemIndexes,
+                    patternInfo   : slingoWinInfo.patternInfo,
+                    matchPatterns : userInfo.gameStatus.matchPatterns.length,
+                    currency    : userInfo.property.currency,
+                    gameInfo    : userInfo.gameStatus,
                 };
                 response = Functions.generateSpinResponse( spinParams );
+                userInfo.gameStatus.spinsRemaining--;
                 break;
             case "chooseCell" :
                 const chosenCellIdx : number = userInfo.gameStatus.cells.indexOf(actionParams.body.cellNumber);
                 userInfo.gameStatus.chooseTime--;
-                console.log("chooseTime", userInfo.gameStatus.chooseTime, chosenCellIdx%5 );
                 if( userInfo.gameStatus.chooseTime>0 ) {
                     actionFlag = 1;
                     userInfo.gameStatus.jokerIndexes = userInfo.gameStatus.jokerIndexes.filter((jId:number) => jId !== chosenCellIdx%5 );
@@ -118,20 +151,16 @@ export const blingoService = {
                     userInfo.gameStatus.gameMatches.push( chosenCellIdx );
                     userInfo.gameStatus.spinMatches.push( chosenCellIdx );
                     const chooseParams = {
-                        symbols     : userInfo.gameStatus.symbols,
-                        stake       : userInfo.gameStatus.stake,
-                        currency    : userInfo.property.currency,
-                        cells       : userInfo.gameStatus.cells,
-                        spinMatches : userInfo.gameStatus.spinMatches,
-                        gameMatches : userInfo.gameStatus.gameMatches,
-                        jokerCells  : userInfo.gameStatus.jokerCells,
-                        spinsRemaining  : userInfo.gameStatus.spinsRemaining,
-                        respinIndexes   : userInfo.gameStatus.respinIndexes,
-                        jokerIndexes    : userInfo.gameStatus.jokerIndexes,
                         actionFlag  : actionFlag,
                         userId      : actionParams.body.userId,
+                        spinSymbolWin   : totalSymbolWin,
                         gameInstanceId  : actionParams.body.gameInstanceId,
-                        purpleGemIndexes : purpleGemIndexes,
+                        symbolWinsInfo  : symbolWinsInfo,
+                        purpleGemIndexes: purpleGemIndexes,
+                        patternInfo   : slingoWinInfo.patternInfo,
+                        matchPatterns : userInfo.gameStatus.matchPatterns.length,
+                        currency    : userInfo.property.currency,
+                        gameInfo    : userInfo.gameStatus,
                     };
                     response = Functions.generateChooseCellResponse( chooseParams );
                 }
@@ -141,6 +170,7 @@ export const blingoService = {
                 break;
         }
         if( action !== "currentGame" ) console.log("response", JSON.stringify( response ) );
+        userInfo.gameStatus.gameMatches.sort( ( a:number,b:number )=> a-b );
         await Models.updateUserInfo( token, userInfo )
         return response;
     },
@@ -180,13 +210,11 @@ export const blingoService = {
             userInfo["balance"] = 10000;
             userInfo["property"] = {
                 rtp : rtp,
-                ip : launcher.ip,
                 game : gameCode,
                 lang : launcher.lang,
                 user : launcher.user,
                 currency : launcher.currency,
                 mode : launcher.mode==="real" ? 1 : 0,
-                bonus : 0,
                 lastId : "lastId"
             };
 

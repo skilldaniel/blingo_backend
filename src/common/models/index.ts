@@ -21,17 +21,24 @@ export const connect = async (dbName : string) => {
 export const addUser = async( newUser:any ) => {
     await Users.deleteOne({ token : newUser.token }) ;
     newUser["gameStatus"] = {
-        stake : 0.5,
-        cells : [] as number[],
+        stake   : 0.5,
+        chooseTime  : 0,
+        isChoose    : false,
+        spinsRemaining  : 10,
+
+        totalWin : 0,
+        totalSymbolWin  : 0,
+
+        cells   : [] as number[],
         symbols : [] as number[],
-        isChoose : false,
+        
         spinMatches : [] as number[],
         gameMatches : [] as number[],
-        jokerCells : [] as number[],
-        jokerIndexes : [] as number[],
-        respinIndexes : [] as number[],
-        chooseTime : 0,
-        spinsRemaining : 10,
+        matchPatterns   : [] as number[],
+        
+        jokerCells  : [] as number[],
+        jokerIndexes    : [] as number[],
+        respinIndexes   : [] as number[],
     };
     
     await Users.insertOne( newUser );
@@ -45,16 +52,23 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                 // "property.lastId" : userInfo.property.lastId,
                 gameStatus: {
                     stake : userInfo.gameStatus.stake,
+                    chooseTime  : userInfo.gameStatus.chooseTime,
+                    isChoose    : userInfo.gameStatus.isChoose,
+                    spinsRemaining  : userInfo.gameStatus.spinsRemaining,
+
+                    totalWin : userInfo.gameStatus.totalWin,
+                    totalSymbolWin  : userInfo.gameStatus.totalSymbolWin,
+
                     cells : userInfo.gameStatus.cells,
                     symbols     : userInfo.gameStatus.symbols,
-                    isChoose    : userInfo.gameStatus.isChoose,
+                    
                     spinMatches : userInfo.gameStatus.spinMatches,
                     gameMatches : userInfo.gameStatus.gameMatches,
+                    matchPatterns   : userInfo.gameStatus.matchPatterns,
+
                     jokerCells  : userInfo.gameStatus.jokerCells,
-                    chooseTime  : userInfo.gameStatus.chooseTime,
                     jokerIndexes    : userInfo.gameStatus.jokerIndexes,
                     respinIndexes   : userInfo.gameStatus.respinIndexes,
-                    spinsRemaining  : userInfo.gameStatus.spinsRemaining,
                 }
             }
         }

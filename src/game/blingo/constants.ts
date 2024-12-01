@@ -25,21 +25,40 @@ export const ERRORDESCRIPTION : {[key: number]: string} = {
     401 : "Unauthorized access",
 }
 
-export const GAMEINFO = {
-    actions : [ "SPIN", "CHOOSE_CELL" ],
-    payTable : {
-        pgCnt : [ 2.5, 1, 0.5 ],
-        
-    },
-    slotPayLine : {
-        1 : [  ],
-        2 : [  ],
-        3 : [  ],
-        4 : [  ],
-        5 : [  ],
-        6 : [  ],
-        7 : [  ],
-        8 : [  ],
-        9 : [  ],
-    }
+export const ACTIONS = [ "SPIN", "CHOOSE_CELL" ];
+
+export const PAYTABLE : { [ key:string ] : number[] } = {
+    pgCnt : [ 2.5, 1, 0.5 ],
+
+};
+
+export const SYMBOLTYPES : { [ key:number ] : string } = {
+    3 : "PURPLE_GEM"
+};
+
+export const SLINGOWINLINES : { [ key:number ] : number[] } = {
+    0 : [ 0,1,2,3,4 ],
+    1 : [ 5,6,7,8,9 ],
+    2 : [ 10,11,12,13,14 ],
+    3 : [ 15,16,17,18,19 ],
+    4 : [ 20,21,22,23,24 ],
+    5 : [ 0,5,10,15,20 ],
+    6 : [ 1,6,11,16,21 ],
+    7 : [ 2,7,12,17,22 ],
+    8 : [ 3,8,13,18,23 ],
+    9 : [ 4,9,14,19,24 ],
+    10 : [ 0,6,12,18,24 ],
+    11 : [ 4,8,12,16,20 ],
+}
+
+export const SLOTPAYLINES : { [ key:number ] : number[] } = {
+    1 : [  ],
+    2 : [  ],
+    3 : [  ],
+    4 : [  ],
+    5 : [  ],
+    6 : [  ],
+    7 : [  ],
+    8 : [  ],
+    9 : [  ],
 }
