@@ -25,7 +25,9 @@ export const ERRORDESCRIPTION : {[key: number]: string} = {
     401 : "Unauthorized access",
 }
 
-export const ACTIONS = [ "SPIN", "CHOOSE_CELL" ];
+export const ACTIONS = [ "SPIN", "CHOOSE_CELL", "NONE" ];
+export const STATES = [ "STANDARD_SPIN", "FREE_PURCHASE_SPIN", "PURCHASE_SPIN", "COMPLETE" ];
+export const SPINTYPES = [ "STANDARD", "RESPIN", "FREE_PURCHASE", "PURCHASE" ];
 
 export const PAYTABLE : { [ key:string ] : number[] } = {
     pgCnt : [ 2.5, 1, 0.5 ],

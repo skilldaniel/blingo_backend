@@ -22,8 +22,16 @@ export const addUser = async( newUser:any ) => {
     await Users.deleteOne({ token : newUser.token }) ;
     newUser["gameStatus"] = {
         stake   : 0.5,
-        chooseTime  : 0,
+        totalStake  : 0.5,
+        // state   : 0,
+        isFreeSpin  : false,
+        fsCount : -1,
+        fpSpinsAwarded  : 0,
+        fpSpinsRemaining : 40,
+        fspSpinsRemaining   : 5,
+
         isChoose    : false,
+        chooseTime  : 0,
         spinsRemaining  : 10,
 
         totalWin : 0,
@@ -32,10 +40,11 @@ export const addUser = async( newUser:any ) => {
         cells   : [] as number[],
         symbols : [] as number[],
         
+        symbolwin   : [] as any[],
         spinMatches : [] as number[],
         gameMatches : [] as number[],
         matchPatterns   : [] as number[],
-        
+
         jokerCells  : [] as number[],
         jokerIndexes    : [] as number[],
         respinIndexes   : [] as number[],
@@ -52,8 +61,16 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                 // "property.lastId" : userInfo.property.lastId,
                 gameStatus: {
                     stake : userInfo.gameStatus.stake,
-                    chooseTime  : userInfo.gameStatus.chooseTime,
+                    totalStake  : userInfo.gameStatus.totalStake,
+
+                    isFreeSpin  : userInfo.gameStatus.isFreeSpin,
+                    fsCount     : userInfo.gameStatus.fsCount,
+                    fpSpinsAwarded  : userInfo.gameStatus.fpSpinsAwarded,
+                    fpSpinsRemaining : userInfo.gameStatus.fpSpinsRemaining,
+                    fspSpinsRemaining   : userInfo.gameStatus.fspSpinsRemaining,
+
                     isChoose    : userInfo.gameStatus.isChoose,
+                    chooseTime  : userInfo.gameStatus.chooseTime,
                     spinsRemaining  : userInfo.gameStatus.spinsRemaining,
 
                     totalWin : userInfo.gameStatus.totalWin,
@@ -84,9 +101,9 @@ export const getUserInfo = async( token:string ) => {
     }
 }
 
-export const updateUserBalance = async( user : string, newBalance : number ) => {
+export const updateUserBalance = async( token:string, newBalance:number ) => {
     try {
-        const filter = { "property.user":user };
+        const filter = { token : token };
         const updateInfo = { 
             $set : { balance : newBalance }
          };
@@ -95,4 +112,3 @@ export const updateUserBalance = async( user : string, newBalance : number ) => 
         console.log('updateUserBalance', error);
     }
 }
-
