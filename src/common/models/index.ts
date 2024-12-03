@@ -21,12 +21,11 @@ export const connect = async (dbName : string) => {
 export const addUser = async( newUser:any ) => {
     await Users.deleteOne({ token : newUser.token }) ;
     newUser["gameStatus"] = {
-        stake   : 0.5,
-        totalStake  : 0.5,
+        stake   : 0,
+        totalStake  : 0,
         // state   : 0,
         isFreeSpin  : false,
         fsCount : -1,
-        fpSpinsAwarded  : 0,
         fpSpinsRemaining : 40,
         fspSpinsRemaining   : 5,
 
@@ -40,7 +39,7 @@ export const addUser = async( newUser:any ) => {
         cells   : [] as number[],
         symbols : [] as number[],
         
-        symbolwin   : [] as any[],
+        symbolWins   : [] as any[],
         spinMatches : [] as number[],
         gameMatches : [] as number[],
         matchPatterns   : [] as number[],
@@ -65,7 +64,6 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
 
                     isFreeSpin  : userInfo.gameStatus.isFreeSpin,
                     fsCount     : userInfo.gameStatus.fsCount,
-                    fpSpinsAwarded  : userInfo.gameStatus.fpSpinsAwarded,
                     fpSpinsRemaining : userInfo.gameStatus.fpSpinsRemaining,
                     fspSpinsRemaining   : userInfo.gameStatus.fspSpinsRemaining,
 
@@ -79,6 +77,7 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                     cells : userInfo.gameStatus.cells,
                     symbols     : userInfo.gameStatus.symbols,
                     
+                    symbolWins : userInfo.gameStatus.symbolWins,
                     spinMatches : userInfo.gameStatus.spinMatches,
                     gameMatches : userInfo.gameStatus.gameMatches,
                     matchPatterns   : userInfo.gameStatus.matchPatterns,

@@ -15,95 +15,93 @@ export const blingoService = {
         const symbols : string[] = action === "spin"  ? Functions.getSymbols() : [];
         console.log(`--------------------> action :: ${ action } ------------------------->`);
 
-        let actionFlag = 0; // 0::SPIN, 1::CHOOSE_CELL,
-        let totalSymbolWin = 0, spinPrice = 0, chosenCellIdx = -1;
+        let actionFlag = 0; // 0::SPIN, 1::CHOOSE_CELL, 2 :: NONE
+        let totalSymbolWin = 0, spinPrice = 0, chosenCellIdx = -1, bonusProfit = 0;;
         let symbolWinsInfo : Types.SymbolWinsType[] = [];
         let purpleGemIndexes : number[] = [];
+        let reelInfo : any = {};
         let response = {};
+
         let slingoWinInfo = {
             patterns : [] as number[],
             patternInfo : [] as any[]
         };
+        
+        if( action === "spin" || action === "chooseCell" ) {
+            let matches : number[] = [];
 
-        if( symbols.length>0 ) {
-            let isJoker = false;
-            let pgCnt = 0;
-            symbols.forEach(( symbol:string, idx:number) => {
-                if( symbol === "RJ" || symbol === "J" ) {
-                    for( let i = 0; i<5; i++ ) {
-                        // console.log(`cell is ${ userInfo.gameStatus.cells[ 5*i+idx ] }, have it ? ${!userInfo.gameStatus.gameMatches.includes( 5*i+idx )}`)
-                        if( !userInfo.gameStatus.gameMatches.includes( 5*i+idx ) ) {
-                            if( !isJoker ) {
+            if( action === "spin" ) {
+                let isJoker = false;
+                let pgCnt = 0;
+                symbols.forEach(( symbol:string, idx:number) => {
+                    if( symbol === "RJ" || symbol === "J" ) {
+                        for( let i = 0; i<5; i++ ) {
+                            if( !userInfo.gameStatus.gameMatches.includes( 5*i+idx ) && !isJoker ) {
                                 isJoker = true;
                                 break;
                             }
                         }
                     }
+                })
+    
+                if( isJoker ) {
+                    actionFlag = 1;
+                    purpleGemIndexes = [ 1 ];
+                    userInfo.gameStatus.isChoose = true;
                 }
-            })
-
-            if( isJoker ) {
-                actionFlag = 1;
-                purpleGemIndexes = [ 1 ];
-                userInfo.gameStatus.isChoose = true;
-            }
-
-            symbols.forEach(( symbol:string, idx:number) => {
-                if( isNaN(parseFloat(symbol)) ) {
-                    if( symbol === "RJ" || symbol === "J" ) {
-                        // console.log("   **** ", isJoker);
-                        if( isJoker ) {
-                            userInfo.gameStatus.chooseTime++;
-                            userInfo.gameStatus.cells.forEach(( cell:number, ind:number ) => {
-                                if( ind%5 === idx && !userInfo.gameStatus.gameMatches.includes( ind ) ) {
-                                    if( !userInfo.gameStatus.jokerIndexes.includes( idx ) ) userInfo.gameStatus.jokerIndexes.push( idx );
-                                    userInfo.gameStatus.jokerCells.push( cell );
-                                }
-                            });
+    
+                symbols.forEach(( symbol:string, idx:number) => {
+                    if( isNaN(parseFloat(symbol)) ) {
+                        if( symbol === "RJ" || symbol === "J" ) {
+                            // console.log("   **** ", isJoker);
+                            if( isJoker ) {
+                                userInfo.gameStatus.chooseTime++;
+                                userInfo.gameStatus.cells.forEach(( cell:number, ind:number ) => {
+                                    if( ind%5 === idx && !userInfo.gameStatus.gameMatches.includes( ind ) ) {
+                                        if( !userInfo.gameStatus.jokerIndexes.includes( idx ) ) userInfo.gameStatus.jokerIndexes.push( idx );
+                                        userInfo.gameStatus.jokerCells.push( cell );
+                                    }
+                                });
+                            }
+                        }
+                        if( symbol == "PG" ) {
+                            pgCnt++;
+                            if( !purpleGemIndexes.includes( idx ) ) purpleGemIndexes.push( idx );
                         }
                     }
-                    if( symbol == "PG" ) {
-                        pgCnt++;
-                        if( !purpleGemIndexes.includes( idx ) ) purpleGemIndexes.push( idx );
-                    }
+                })
+    
+                if( pgCnt>=3 ) {
+                    totalSymbolWin = Math.round( totalSymbolWin*100 + Constants.PAYTABLE[100][5-pgCnt]*0.5*100 )/100;
+                    userInfo.gameStatus.totalSymbolWin = Math.round( userInfo.gameStatus.totalSymbolWin*100+totalSymbolWin*100 )/100;
+                    userInfo.gameStatus.totalWin = Math.round( userInfo.gameStatus.totalWin*100+totalSymbolWin*100 )/100;
+                    const symbolWinItem : Types.SymbolWinsType = {
+                        symbols : 3,
+                        amount : totalSymbolWin,
+                        type : Constants.SYMBOLTYPES[3]
+                    };
+                    userInfo.gameStatus.symbolWins.push( symbolWinItem );
+                    symbolWinsInfo.push( symbolWinItem );
                 }
-            })
-
-            if( pgCnt>=3 ) {
-                totalSymbolWin = Math.round( totalSymbolWin*100 + Constants.PAYTABLE["pgCnt"][5-pgCnt]*0.5*100 )/100;
-                userInfo.gameStatus.totalSymbolWin = Math.round( userInfo.gameStatus.totalSymbolWin*100+totalSymbolWin*100 )/100;
-                userInfo.gameStatus.totalWin = Math.round( userInfo.gameStatus.totalWin*100+totalSymbolWin*100 )/100;
-                const symbolwinItem : Types.SymbolWinsType = {
-                    symbols : 3,
-                    amount : totalSymbolWin,
-                    type : Constants.SYMBOLTYPES[3]
-                };
-                symbolWinsInfo.push( symbolwinItem );
-            }
-        }
-
-        if( action === "spin" || action === "chooseCell" ) {
-            let matches : number[] = [];
-            if( action==="spin" ) {
                 userInfo.gameStatus.symbols = symbols;
                 userInfo.gameStatus.spinMatches.length = 0;
                 matches = Functions.getIdxMatchedSymbol( userInfo.gameStatus.cells, symbols );
-            } else {
-                chosenCellIdx = userInfo.gameStatus.cells.indexOf( actionParams.body.cellNumber );
-            }
-            
-            if( action === "spin" && matches.length>0 ) {
-                matches.forEach((matchPos:number) => {
-                    if( !userInfo.gameStatus.gameMatches.includes( matchPos ) ) {
-                        userInfo.gameStatus.gameMatches.push( matchPos );
-                        userInfo.gameStatus.spinMatches.push( matchPos );
-                    }
-                });
-            }
 
-            if( action==="chooseCell" && !userInfo.gameStatus.gameMatches.includes( chosenCellIdx ) ) {
-                userInfo.gameStatus.gameMatches.push( chosenCellIdx );
-                userInfo.gameStatus.spinMatches.push( chosenCellIdx );
+                if( matches.length>0 ) {
+                    matches.forEach((matchPos:number) => {
+                        if( !userInfo.gameStatus.gameMatches.includes( matchPos ) ) {
+                            userInfo.gameStatus.gameMatches.push( matchPos );
+                            userInfo.gameStatus.spinMatches.push( matchPos );
+                        }
+                    });
+                }
+            } 
+            if( action==="chooseCell" ) {
+                chosenCellIdx = userInfo.gameStatus.cells.indexOf( actionParams.body.cellNumber );
+                if( !userInfo.gameStatus.gameMatches.includes( chosenCellIdx ) ) {
+                    userInfo.gameStatus.gameMatches.push( chosenCellIdx );
+                    userInfo.gameStatus.spinMatches.push( chosenCellIdx );
+                }
             }
 
             if( userInfo.gameStatus.spinMatches.length>0 ) {
@@ -116,16 +114,49 @@ export const blingoService = {
 
             if( userInfo.gameStatus.fsCount >= 0 ) spinPrice = Functions.calcSpinPrice();
         }
+        
+        if( userInfo.gameStatus.gameMatches.length===25 ) {
+            let winSymbol = 0;
+            actionFlag = 2;
+            reelInfo = Functions.generateBonusSpins( 12 );
+            bonusProfit = reelInfo.bonusProfit;
+        }
+        
+        if( actionFlag === 2) {
+            console.log(" end here ", userInfo.balance, userInfo.gameStatus.totalSymbolWin, bonusProfit );
+            userInfo.balance = Math.round( userInfo.balance*100+userInfo.gameStatus.totalSymbolWin*100+bonusProfit*100 )/100;
+            console.log(" end here ", userInfo.balance );
+        }
 
         switch ( action ) {
             case "currentGame" :
                 userInfo.gameStatus.cells = cells;
+                userInfo.gameStatus.totalStake = 0;
+                userInfo.gameStatus.isFreeSpin = false;
+                userInfo.gameStatus.fsCount = -1;
+                userInfo.gameStatus.fpSpinsRemaining = 40;
+                userInfo.gameStatus.fspSpinsRemaining = 5;
+                userInfo.gameStatus.isChoose = false;
+                userInfo.gameStatus.chooseTime = 0;
+                userInfo.gameStatus.spinsRemaining = 10;
+                userInfo.gameStatus.totalWin = 0;
+                userInfo.gameStatus.totalSymbolWin = 0;
+
+                userInfo.gameStatus.symbols.length = 0;
+                userInfo.gameStatus.symbolWins.length = 0;
+                userInfo.gameStatus.spinMatches.length = 0;
+                userInfo.gameStatus.gameMatches.length = 0;
+                userInfo.gameStatus.matchPatterns.length = 0;
+                userInfo.gameStatus.jokerCells.length = 0;
+                userInfo.gameStatus.jokerIndexes.length = 0;
+                userInfo.gameStatus.respinIndexes.length = 0;
 
                 const curParams = {
                     cells : userInfo.gameStatus.cells,
                     balance : userInfo.balance,
                     currency : userInfo.property.currency
                 };
+
                 response = Functions.generateCurrentGameResponse( curParams );
                 break;
             case "startGame" :
@@ -150,37 +181,36 @@ export const blingoService = {
                 if( sid === 2 ) userInfo.gameStatus.respinIndexes = []
 
                 if( userInfo.gameStatus.spinsRemaining === 0 ) {
-                    if( !userInfo.gameStatus.isFreeSpin && userInfo.gameStatus.fsCount === -1 ) {
-                        userInfo.gameStatus.isFreeSpin = true;
-                    }
+                    if( !userInfo.gameStatus.isFreeSpin && userInfo.gameStatus.fsCount === -1 ) userInfo.gameStatus.isFreeSpin = true;
 
                     userInfo.gameStatus.fsCount++;
                     if( userInfo.gameStatus.fsCount===1 ) userInfo.gameStatus.fspSpinsRemaining = 0;
                     else if( userInfo.gameStatus.fsCount>1 ) userInfo.gameStatus.fpSpinsRemaining--;
                 }
 
-                if( userInfo.gameStatus.gameMatches.length===25 ) {
-                    actionFlag = 2;
-                }
                 const spinParams = {
                     actionFlag  : actionFlag,
                     userId      : actionParams.body.userId,
+                    patternInfo : slingoWinInfo.patternInfo,
+                    spinPrice   : spinPrice,
+                    bonusProfit : bonusProfit,
                     gameInstanceId  : actionParams.body.gameInstanceId,
                     symbolWinsInfo  : symbolWinsInfo,
                     spinSymbolWin   : totalSymbolWin,
                     purpleGemIndexes: purpleGemIndexes,
-                    patternInfo : slingoWinInfo.patternInfo,
-                    spinPrice   : spinPrice,
                     balance     : userInfo.balance,
-                    matchPatterns : userInfo.gameStatus.matchPatterns.length,
                     currency    : userInfo.property.currency,
                     gameInfo    : userInfo.gameStatus,
+                    matchPatterns   : userInfo.gameStatus.matchPatterns.length,
                 };
                 response = Functions.generateSpinResponse( spinParams );
                 
                 if( userInfo.gameStatus.fsCount>=1 ) {
-                    userInfo.gameStatus.totalStake = Math.round( userInfo.gameStatus.totalStake*100+spinPrice*100 ) / 100;
-                    userInfo.balance = Math.round( userInfo.balance*100-spinPrice*100 )/100;
+                    if( actionFlag === 0 ) {
+                        userInfo.gameStatus.totalStake = Math.round( userInfo.gameStatus.totalStake*100+spinPrice*100 ) / 100;
+                        userInfo.balance = Math.round( userInfo.balance*100-spinPrice*100 )/100;
+                    }
+
                     await Models.updateUserBalance( userInfo.token, userInfo.balance )
                 }
 

@@ -29,9 +29,14 @@ export const ACTIONS = [ "SPIN", "CHOOSE_CELL", "NONE" ];
 export const STATES = [ "STANDARD_SPIN", "FREE_PURCHASE_SPIN", "PURCHASE_SPIN", "COMPLETE" ];
 export const SPINTYPES = [ "STANDARD", "RESPIN", "FREE_PURCHASE", "PURCHASE" ];
 
-export const PAYTABLE : { [ key:string ] : number[] } = {
-    pgCnt : [ 2.5, 1, 0.5 ],
-
+export const PAYTABLE : { [ key:number ] : number[] } = {
+    100 : [ 2.5, 1, 0.5 ],
+    8 : [ 250, 200, 50 ],
+    7 : [ 120, 60, 25 ],
+    6 : [ 60, 25, 10 ],
+    5 : [ 50, 20, 8 ],
+    4 : [ 40, 15, 7 ],
+    3 : [ 25, 10, 5 ],
 };
 
 export const SYMBOLTYPES : { [ key:number ] : string } = {
@@ -54,13 +59,14 @@ export const SLINGOWINLINES : { [ key:number ] : number[] } = {
 }
 
 export const SLOTPAYLINES : { [ key:number ] : number[] } = {
-    1 : [  ],
-    2 : [  ],
-    3 : [  ],
-    4 : [  ],
-    5 : [  ],
-    6 : [  ],
-    7 : [  ],
-    8 : [  ],
-    9 : [  ],
+    1 : [ 0, 1, 2, 3, 4 ],
+    2 : [ 5, 6, 7, 8, 9 ],
+    3 : [ 10, 11, 12, 13, 14 ],
+    4 : [ 0, 6, 12, 8, 4 ],
+    5 : [ 10, 6, 2, 8, 14 ],
+    6 : [ 0, 1, 7, 3, 4 ],
+    7 : [ 10, 11, 7, 13, 14 ],
+    8 : [ 5, 11, 12, 13, 9 ],
+    9 : [ 5, 1, 2, 3, 9 ],
+    10 : [ 5, 1, 7, 3, 9 ],
 }

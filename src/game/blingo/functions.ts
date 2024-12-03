@@ -26,20 +26,25 @@ export const getCells = () => {
 
 export const getSymbols = () => {
     const symbolsArr = [
-        ["1", "RJ", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], 
-        ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"],
-        ["12", "J", "45", "51", "64"], ["5", "26", "D", "58", "75"], ["11", "17", "38", "J", "69"], 
-        ["3", "30", "31", "56", "74"], 
-        // FREE_PURCHASE_SPIN
-        ["13", "27", "PG", "60", "70"], [],
-        ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], ["11", "23", "43", "52", "68"], 
-        ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
-        // purchase
-        ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], 
-        ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], 
-        ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], 
-        ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], 
-        ["13", "18", "37", "53", "68"],
+        // ["1", "RJ", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], 
+        // ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"],
+        // ["12", "J", "45", "51", "64"], ["5", "26", "D", "58", "75"], ["11", "17", "38", "J", "69"], 
+        // ["3", "30", "31", "56", "74"], 
+        // // FREE_PURCHASE_SPIN
+        // ["13", "27", "PG", "60", "70"], [],
+        // ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], ["11", "23", "43", "52", "68"], 
+        // ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
+        // // purchase
+        // ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], 
+        // ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], 
+        // ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], 
+        // ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], 
+        // ["13", "18", "37", "53", "68"],
+        ["10", "26", "40", "59", "75"], ["2", "22", "33", "60", "62"], ["3", "17", "40", "J", "70"],
+        ["3", "17", "40", "J", "70"], ["2", "23", "D", "48", "65"], ["D", "24", "PG", "51", "66"],
+        ["9", "D", "J", "56", "73"], ["2", "24", "31", "59", "63"], ["PG", "24", "PG", "56", "73"], 
+        ["J", "21", "31", "59", "70"], ["PG", "22", "J", "54", "68"], ["15", "28", "PG", "49", "64"],
+        [], ["12", "J", "40", "56", "66"]
     ];
     const symbols = symbolsArr[ sid ];
     sid++;
@@ -47,7 +52,7 @@ export const getSymbols = () => {
 }
 
 export const calcSpinPrice = () => {
-    const spinPrices = [ 0.62, 0.62, 0.62, 0.62, 1.27, 1.27, 1.27, 3.03, 3.03, 8.47, 8.47, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39 ];
+    const spinPrices = [ 0.62, 0.62, 0.62, 0.62, 1.27, 1.27, 1.27, 3.03, 3.03, 3.03, 8.47, 8.47, 8.47, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39 ];
     spid++;
     return spinPrices[ spid ];
 }
@@ -158,6 +163,47 @@ export const generateStartGameResponse = (params: any) => {
     return response;
 }
 
+export const generateBonusSpins = ( winSymbol:number ) => {
+    let bonusProfit = 50;
+    let expandFlag = false;
+    const reels : number[][][] = [];
+/*    
+    const reels : number[][][] = [
+        [ [ 8,5,4 ], [ 8,4,3 ], [ 4,12,3 ], [ 5,5,7 ], [ 6,3,7 ] ], 
+        [ [ 7,6,8 ], [ 8,12,4 ], [ 12,12,12 ], [ 4,8,8 ], [ 3,6,7 ] ], 
+        [ [ 6,4,5 ], [ 12,12,12 ], [ 12,12,12 ], [ 4,3,8 ], [ 4,7,4 ] ],
+    ];
+    
+    reels.forEach( ( reels:number[][], ind:number ) => {
+        console.log(`<------------------------------------------------------------------------->`);
+        const flatReels = Array.from({ length:reels[0].length }, (_, i) => reels.map( row=>row[i]) ).flat();
+        let expandFlag = false;
+        console.log("flatReels", String(flatReels));
+        if( flatReels.includes(12) ) {
+            expandFlag = true;
+            const expandPos = flatReels.reduce(( acc:number[], val:number, idx:number) => {
+                if( val === 12 && !acc.includes(idx%5) ) acc.push( (idx%5) );
+                return acc;
+            }, []);
+            console.log(`expandPos ${expandPos}`);
+        }
+    } );
+*/
+    if( winSymbol === 12 ) {
+        expandFlag = true;
+    }
+    if( expandFlag ) {
+
+    } else {
+
+    }
+
+    return {
+        reels : reels,
+        bonusProfit : bonusProfit
+    }
+}
+
 export const generateSpinResponse = ( params: any ) => {
     const gameInfo = params.gameInfo;
     const matches = generateMatchePatterns( gameInfo.spinMatches, gameInfo.cells, params.patternInfo );
@@ -202,27 +248,16 @@ export const generateSpinResponse = ( params: any ) => {
             },
             "spinPrice": params.spinPrice,
             "matchedPatterns": params.matchPatterns,
-            "totalPatternWin": 0,
+            "totalPatternWin": params.bonusProfit,
             "totalSymbolWin": gameInfo.totalSymbolWin,
-            "totalWin": gameInfo.totalWin
+            "totalWin": Math.round( gameInfo.totalSymbolWin*100+params.bonusProfit*100 )/100,
         },
         "response": 0
     }
 
     if( params.actionFlag===2 ) {
         const winResp = {
-            "symbolWins": [
-                {
-                    "symbols": 3,
-                    "amount": 0.25,
-                    "type": "PURPLE_GEM"
-                },
-                {
-                    "symbols": 3,
-                    "amount": 0.25,
-                    "type": "PURPLE_GEM"
-                }
-            ],
+            "symbolWins": gameInfo.symbolWins,
             "patternWin": {
                 "amount": 50,
                 "matchedPatterns": 12
@@ -887,7 +922,7 @@ export const generateSpinResponse = ( params: any ) => {
                         "totalWin": 6.4
                     }
                 ],
-                "stake": 0.5,
+                "stake": gameInfo.stake,
                 "totalWin": 50
             },            
         }
@@ -933,7 +968,7 @@ export const generateChooseCellResponse = ( params:any ) => {
             "action": Contants.ACTIONS[ params.actionFlag ],
             "stake": gameInfo.stake,
             "totalStake": gameInfo.totalStake,
-            "spinsRemaining": gameInfo.spinsRemaining++,
+            "spinsRemaining": ( gameInfo.spinsRemaining+1 ),
             "freeSpinsRemaining": 0,
             "freePurchaseSpinsRemaining": gameInfo.fspSpinsRemaining,
             "purchaseSpinsRemaining": gameInfo.fpSpinsRemaining,
