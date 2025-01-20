@@ -21,7 +21,9 @@ export const connect = async (dbName : string) => {
 export const addUser = async( newUser:any ) => {
     await Users.deleteOne({ token : newUser.token }) ;
     newUser["gameStatus"] = {
-        stake   : 0,
+        // stake   : 0,
+        stake   : 0.5,
+        fsStake : 0,
         totalStake  : 0,
         // state   : 0,
         isFreeSpin  : false,
@@ -39,7 +41,7 @@ export const addUser = async( newUser:any ) => {
         cells   : [] as number[],
         symbols : [] as number[],
         
-        symbolWins   : [] as any[],
+        symbolWins  : [] as any[],
         spinMatches : [] as number[],
         gameMatches : [] as number[],
         matchPatterns   : [] as number[],
@@ -60,6 +62,7 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                 // "property.lastId" : userInfo.property.lastId,
                 gameStatus: {
                     stake : userInfo.gameStatus.stake,
+                    fsStake : userInfo.gameStatus.fsStake,
                     totalStake  : userInfo.gameStatus.totalStake,
 
                     isFreeSpin  : userInfo.gameStatus.isFreeSpin,

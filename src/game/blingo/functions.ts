@@ -1,4 +1,8 @@
-import * as Contants from '@/game/blingo/constants';
+import * as Constants from '@/game/blingo/constants';
+
+const getFloorRandom = ( len : number ) => {
+    return Math.floor( Math.random()*len );
+}
 
 export const generateFunToken = () => {
     round++;
@@ -13,46 +17,63 @@ export const getCurrentTime = () => {
 /**
  * gameRouter
  */
-let round = 0, cid = 0, sid = 0, spid = 0 ;
+let round = 0, cid = 0, sid = 0, spid = 0, rid = 0 ;
+const maxVal = 75, wild = 12;
+const cellsArr = [
+    [ 5,25,31,53,61, 7,22,43,55,65, 11,18,38,46,74,3,21,33,49,64,13,26,40,56,71 ],
+];
+const makeRandArr = ( orgArr:number[] ) => {
+    for (let i = orgArr.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        [orgArr[i], orgArr[j]] = [orgArr[j], orgArr[i]];
+    }
+    return orgArr;
+}
 
 export const getCells = () => {
-    const cellsArr = [
-        [ 5,25,31,53,61,7,22,43,55,65,11,18,38,46,74,3,21,33,49,64,13,26,40,56,71 ],
-    ];
+    let numbers = Array.from({ length: maxVal }, (_, i) => i + 1);
+    numbers = makeRandArr( numbers );
+    // const cells : number[] = numbers.slice(0, 25);
     const cells = cellsArr[ cid ];
-    // cid++;
+    cid++;
     return cells;
 }
 
-export const getSymbols = () => {
+export const getSymbols = ( params:any ) => {
     const symbolsArr = [
-        // ["1", "RJ", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], 
-        // ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"],
-        // ["12", "J", "45", "51", "64"], ["5", "26", "D", "58", "75"], ["11", "17", "38", "J", "69"], 
-        // ["3", "30", "31", "56", "74"], 
-        // // FREE_PURCHASE_SPIN
-        // ["13", "27", "PG", "60", "70"], [],
-        // ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], ["11", "23", "43", "52", "68"], 
-        // ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
-        // // purchase
-        // ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], 
-        // ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], 
-        // ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], 
-        // ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], 
-        // ["13", "18", "37", "53", "68"],
-        ["10", "26", "40", "59", "75"], ["2", "22", "33", "60", "62"], ["3", "17", "40", "J", "70"],
-        ["3", "17", "40", "J", "70"], ["2", "23", "D", "48", "65"], ["D", "24", "PG", "51", "66"],
-        ["9", "D", "J", "56", "73"], ["2", "24", "31", "59", "63"], ["PG", "24", "PG", "56", "73"], 
-        ["J", "21", "31", "59", "70"], ["PG", "22", "J", "54", "68"], ["15", "28", "PG", "49", "64"],
-        [], ["12", "J", "40", "56", "66"]
+        ["1", "RJ", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], 
+        ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"],
+        ["12", "J", "45", "51", "64"], ["5", "26", "D", "58", "75"], ["11", "17", "38", "J", "69"], 
+        ["3", "30", "31", "56", "74"], 
+        // FREE_PURCHASE_SPIN
+        ["13", "27", "PG", "60", "70"], [], ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], 
+        ["11", "23", "43", "52", "68"], ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
+        // purchase
+        ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], 
+        ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], 
+        ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], 
+        ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], 
+        ["13", "18", "37", "53", "68"],
+        
+        // ["10", "26", "40", "59", "75"], ["2", "22", "33", "60", "62"], ["3", "17", "40", "J", "70"],
+        // ["2", "23", "D", "48", "65"], ["D", "24", "PG", "51", "66"],["9", "D", "J", "56", "73"], 
+        // ["2", "24", "31", "59", "63"], ["PG", "24", "PG", "56", "73"], ["J", "21", "31", "59", "70"], 
+        // ["PG", "22", "J", "54", "68"], ["15", "28", "PG", "49", "64"], [], ["12", "J", "40", "56", "66"], ["10", "18", "PG", "51", "74"], ["5", "29", "D", "52", "D"], ["3", "26", "33", "SJ", "PG"], 
+        // ["D", "26", "32", "J", "64"], ["D", "PG", "41", "50", "67"], ["11", "24", "31", "48", "61"], 
+        // ["8", "PG", "31", "PG", "71"], ["5", "PG", "PG", "49", "63"], ["10", "28", "J", "52", "73"]
     ];
+    const numbers = Array.from({ length: maxVal }, (_, i) => i + 1);
+    let misMatched = numbers.filter( num => !params.gameMatches.includes( num ) );
+    misMatched = makeRandArr( misMatched );
+    console.log(`symbols=`, misMatched.slice(0,5));
     const symbols = symbolsArr[ sid ];
     sid++;
     return symbols;
 }
 
 export const calcSpinPrice = () => {
-    const spinPrices = [ 0.62, 0.62, 0.62, 0.62, 1.27, 1.27, 1.27, 3.03, 3.03, 3.03, 8.47, 8.47, 8.47, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39, 5.39 ];
+    const spinPrices = [ 0.62, 1.27, 3.03, 8.47, 5.39 ];
+    // const spinPrices = [ 0.03, 0.03, 0.06, 0.31, 0.33, 0.33, 0.61, 0.61, 0.54, 0.54, 0.71, 1.27, 1.27, 1.27, 2.79, 2.79 ];
     spid++;
     return spinPrices[ spid ];
 }
@@ -82,8 +103,8 @@ export const checkSlingoWinLines = ( gameMatches:number[], spinMatches : number[
     const patterns  : number[] = [];
     const patternInfo   : any[] = [];
     if( gameMatches.length>5 ) {
-        for( const key in Contants.SLINGOWINLINES ) {
-            const winLine = Contants.SLINGOWINLINES[key];
+        for( const key in Constants.SLINGOWINLINES ) {
+            const winLine = Constants.SLINGOWINLINES[key];
             spinMatches.forEach(( idx:number ) => {
                 if( winLine.includes( idx )) {
                     const isPattern = winLine.every( element => gameMatches.includes(element) );
@@ -163,45 +184,197 @@ export const generateStartGameResponse = (params: any) => {
     return response;
 }
 
-export const generateBonusSpins = ( winSymbol:number ) => {
-    let bonusProfit = 50;
-    let expandFlag = false;
-    const reels : number[][][] = [];
-/*    
-    const reels : number[][][] = [
-        [ [ 8,5,4 ], [ 8,4,3 ], [ 4,12,3 ], [ 5,5,7 ], [ 6,3,7 ] ], 
-        [ [ 7,6,8 ], [ 8,12,4 ], [ 12,12,12 ], [ 4,8,8 ], [ 3,6,7 ] ], 
-        [ [ 6,4,5 ], [ 12,12,12 ], [ 12,12,12 ], [ 4,3,8 ], [ 4,7,4 ] ],
-    ];
-    
-    reels.forEach( ( reels:number[][], ind:number ) => {
-        console.log(`<------------------------------------------------------------------------->`);
-        const flatReels = Array.from({ length:reels[0].length }, (_, i) => reels.map( row=>row[i]) ).flat();
-        let expandFlag = false;
-        console.log("flatReels", String(flatReels));
-        if( flatReels.includes(12) ) {
-            expandFlag = true;
-            const expandPos = flatReels.reduce(( acc:number[], val:number, idx:number) => {
-                if( val === 12 && !acc.includes(idx%5) ) acc.push( (idx%5) );
-                return acc;
-            }, []);
-            console.log(`expandPos ${expandPos}`);
+const selectPayLine = ( idx:number ) => {
+    const lines : { [key:number] : number[] } = {
+        0 : [ 1,4,6 ],
+        1 : [ 2,8,9,10 ],
+        2 : [ 3,5,7 ]
+    }
+    return lines[idx][ getFloorRandom( lines[idx].length )];
+}
+
+const checkPayLines = ( reels:number[][][], stake:number ) => {
+    // LEFT_TO_RIGHT
+    let bonusProfit = 0;
+    const reelPayInfo : any[] = [];
+
+    reels.forEach((subReels:number[][], height:number) => {
+        console.log(`subReels=`, subReels);
+        const payInfo : any[] = [];
+        for (const key in Constants.SLOTPAYLINES) {
+            if( Constants.SLOTPAYLINES.hasOwnProperty(key) ) {
+                const payItemLR : any = {
+                    symbol : 0,
+                    sameCnt : 0,
+                    line : key,
+                    direct : 0,
+                    profit : 0
+                };
+                const line = Constants.SLOTPAYLINES[ key ];
+                const reelKey = subReels[0][line[0]];
+                let sameCnt = 1;
+                for( let i=1; i<5; i++ ) {
+                    if( subReels[ i ][ line[i] ] === reelKey || subReels[ i ][ line[i] ] === 12 ) sameCnt++;
+                    else break;
+                }
+                if( sameCnt>=3 ) {
+                    payItemLR.symbol = reelKey;
+                    payItemLR.sameCnt = sameCnt;
+                    payItemLR.profit = Math.round(stake*Constants.PAYTABLE[ reelKey ][ 5-sameCnt ]*10)/100;
+                    console.log(`stake=${stake}, reelKey=${reelKey}, val=${Constants.PAYTABLE[ reelKey ][ 5-sameCnt ]} `);
+                    bonusProfit = Math.round( bonusProfit*100 + payItemLR.profit*100 )/100;
+                    payInfo.push(payItemLR);
+                }
+            }
         }
-    } );
-*/
-    if( winSymbol === 12 ) {
-        expandFlag = true;
-    }
-    if( expandFlag ) {
-
-    } else {
-
-    }
-
+        reelPayInfo.push( payInfo );
+    });
+    // RIGHT_TO_LEFT
     return {
-        reels : reels,
-        bonusProfit : bonusProfit
+        payInfo : reelPayInfo,
+        totalProfit : bonusProfit
     }
+}
+
+const generateTriggers = ( line:number, sameCnt:number ) => {
+    const reelPos: number[][] = [ [0,0,0], [0,0,0], [0,0,0], [0,0,0], [0,0,0] ];
+    const triggers : string[] = [];
+    for (let index = 0; index < sameCnt; index++) {
+        reelPos[index][ Constants.SLOTPAYLINES[line][index] ]=1;
+        triggers.push( String(reelPos[index]) );
+    }
+    for( let i=0; i<5-sameCnt; i++ ) {
+        triggers.push( String([0,0,0]) );
+    }
+    return triggers;
+};
+
+// [ [  ], [  ], [  ], [  ], [  ] ],
+const fsReels = [
+    [ [ 8,5,4 ], [ 8,4,3 ], [ 4,12,3 ], [ 5,5,7 ], [ 6,3,7 ] ],
+    [ [ 7,6,8 ], [ 8,12,4 ], [ 12,12,12 ], [ 4,8,8 ], [ 3,6,7 ] ],
+    [ [ 6,4,5 ], [ 12,12,12 ], [ 12,12,12 ], [ 4,3,8 ], [ 4,7,4 ] ],
+];
+
+export const generateBonusSpins = ( winSymbol:number, stake:number ) => {
+    let reels : number[][] = [];
+    const fullReels = [ 3,4,5,6,7,8,12 ];
+    const cntRand = Math.random();
+    const maxCnt = 1 ;
+    // const maxCnt = cntRand > 0.99 ? 3 : cntRand > 0.5 ? 2 : 1 ;
+    const reelMrx : typeof reels[] = [];
+    
+    for( let i=0; i<maxCnt; i++ ) {
+        for( let j=0; j<5; j++ ) {
+            reels[ j ] = [];
+            for( let k=0; k<3; k++ ) {
+                let rand = getFloorRandom(( fullReels.length ));
+                reels[ j ][ k ] = fullReels[ rand ];
+            }
+        }
+
+        if( !reels[0].includes( winSymbol ) ) {
+            reels[0][ getFloorRandom(3) ] = winSymbol;
+        }
+        const line = selectPayLine( reels[0].indexOf( winSymbol ) );
+        const sameCnt = getFloorRandom( 3 )+3;
+        console.log(`line=${line}, sameCnt=${sameCnt}`)
+        for( let k=0; k<sameCnt; k++ ) {
+            reels[ k ][ Constants.SLOTPAYLINES[line][k] ] = winSymbol;
+        }
+        reels = fsReels[ rid ];
+        // rid++;
+        reelMrx.push( [...reels] );
+    }
+    const payLineInfo = checkPayLines( reelMrx, stake );
+    return {
+        reelMrx : reelMrx,
+        payLineInfo : payLineInfo.payInfo,
+        bonusProfit : payLineInfo.totalProfit
+    };
+}
+
+export const generateBonusResponse = ( params: any ) => {
+    const symbolDict: { [ key:number ] : string } = {
+        3 : "BLUE_GEM",
+        4 : "ORANGE_GEM",
+        5 : "GREEN_GEM",
+        6 : "YELLOW_GEM",
+        7 : "SEVEN",
+        8 : "BAR",
+        12 : "EXPANDING_WILD",
+    };
+    const directDict: { [ key:number ] : string } = {
+        0 : "LEFT_TO_RIGHT",
+        1 : "RIGHT_TO_LEFT"
+    };
+    const spins : any[] = [];
+
+    params.bonusReelInfo.reelMrx.forEach((subReels: number[][], idx: number) => {
+        let totalWin = 0;
+        let hasExpand = false;
+        const expansionIndexes : number[] = [];
+        const subPayLineInfo = params.bonusReelInfo.payLineInfo[idx];
+        const expandReels : any[] = [];
+        const reels : any[] = [];
+        const wins : any[]  = [];
+
+        subReels.forEach(( item:number[], ind:number ) => {
+            const symbolStr: string[] = [];
+            const expSymbolStr: string[] = [];
+            item.forEach(( no : number ) => {
+                if( item.includes(12) ) {
+                    if( !hasExpand ) hasExpand = true;
+                    if( !expansionIndexes.includes( ind ) ) expansionIndexes.push( ind );
+                    expSymbolStr.push( symbolDict[12] );
+                } else {
+                    expSymbolStr.push( symbolDict[no] );
+                }
+                symbolStr.push( symbolDict[no] );
+            })
+            reels.push( { symbols : symbolStr } );
+            expandReels.push( { symbols : expSymbolStr } );
+        });
+
+        subPayLineInfo.forEach((payItem:any)=>{
+            const winItem = {
+                direction: directDict[ payItem.direct ],
+                symbol: symbolDict[ payItem.symbol ],
+                index: payItem.line,
+                symbols: payItem.sameCnt,
+                amount: payItem.profit,
+                multiplier: Constants.PAYTABLE[ payItem.symbol ][ 5-payItem.sameCnt ],
+                triggers: generateTriggers( payItem.line, payItem.sameCnt )
+            }
+            totalWin = Math.round(totalWin*100+payItem.profit*100)/100;
+            wins.push( winItem );
+        })
+
+        const subSpin = {
+            reels : reels,
+            expansionIndexes : expansionIndexes,
+            wins : wins,
+            totalWin : totalWin
+        };
+
+        if( hasExpand ) {
+            const expandResp = {
+                expandedReels : expandReels
+            }
+            Object.assign( subSpin, expandResp );
+        }
+        spins.push( subSpin );
+    });
+
+    const bonusResp = {
+        bonus : {
+            gameInstanceId : 94674369,
+            spins : spins,
+            stake : params.stake,
+            totalWin : params.totalWin,
+        }
+    }
+   return bonusResp;
 }
 
 export const generateSpinResponse = ( params: any ) => {
@@ -222,8 +395,8 @@ export const generateSpinResponse = ( params: any ) => {
             "userId": params.userId,
             "gameInstanceId": params.gameInstanceId,
             "currencyCode": params.currency,
-            "state": Contants.STATES[ state ],
-            "action": Contants.ACTIONS[ params.actionFlag ],
+            "state": Constants.STATES[ state ],
+            "action": Constants.ACTIONS[ params.actionFlag ],
             "stake": gameInfo.stake,
             "totalStake": gameInfo.totalStake,
             "spinsRemaining": gameInfo.spinsRemaining,
@@ -233,7 +406,7 @@ export const generateSpinResponse = ( params: any ) => {
             "freeSpinsAwarded": 0,
             "freePurchaseSpinsAwarded": gameInfo.fsCount > 0 ? 1 : 0,
             "spin": {
-                "type": Contants.SPINTYPES[ spinType ],
+                "type": Constants.SPINTYPES[ spinType ],
                 "symbols": gameInfo.symbols,
                 "jokerIndexes": gameInfo.jokerIndexes,
                 "jokerCells": gameInfo.jokerCells ,
@@ -264,668 +437,12 @@ export const generateSpinResponse = ( params: any ) => {
             },
         };
         Object.assign( response.game, winResp );
-        const bonusResp = {
-            "bonus": {
-                "gameInstanceId": params.gameInstanceId,
-                "spins": [
-                    {
-                        "reels": [
-                            {
-                                "symbols": [
-                                    "BAR",
-                                    "GREEN_GEM",
-                                    "ORANGE_GEM"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "BAR",
-                                    "ORANGE_GEM",
-                                    "BLUE_GEM"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "ORANGE_GEM",
-                                    "EXPANDING_WILD",
-                                    "BLUE_GEM"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "GREEN_GEM",
-                                    "GREEN_GEM",
-                                    "SEVEN"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "YELLOW_GEM",
-                                    "BLUE_GEM",
-                                    "SEVEN"
-                                ]
-                            }
-                        ],
-                        "expansionIndexes": [
-                            2
-                        ],
-                        "expandedReels": [
-                            {
-                                "symbols": [
-                                    "BAR",
-                                    "GREEN_GEM",
-                                    "ORANGE_GEM"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "BAR",
-                                    "ORANGE_GEM",
-                                    "BLUE_GEM"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "GREEN_GEM",
-                                    "GREEN_GEM",
-                                    "SEVEN"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "YELLOW_GEM",
-                                    "BLUE_GEM",
-                                    "SEVEN"
-                                ]
-                            }
-                        ],
-                        "wins": [
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "BAR",
-                                "index": 1,
-                                "symbols": 3,
-                                "amount": 2.5,
-                                "multiplier": 50,
-                                "triggers": [
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "RIGHT_TO_LEFT",
-                                "symbol": "SEVEN",
-                                "index": 2,
-                                "symbols": 3,
-                                "amount": 1.25,
-                                "multiplier": 25,
-                                "triggers": [
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "ORANGE_GEM",
-                                "index": 4,
-                                "symbols": 3,
-                                "amount": 0.35,
-                                "multiplier": 7,
-                                "triggers": [
-                                    "0,0,1",
-                                    "0,1,0",
-                                    "1,0,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "BAR",
-                                "index": 5,
-                                "symbols": 3,
-                                "amount": 2.5,
-                                "multiplier": 50,
-                                "triggers": [
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "0,1,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "RIGHT_TO_LEFT",
-                                "symbol": "SEVEN",
-                                "index": 6,
-                                "symbols": 3,
-                                "amount": 1.25,
-                                "multiplier": 25,
-                                "triggers": [
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,1,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            }
-                        ],
-                        "totalWin": 7.85
-                    },
-                    {
-                        "reels": [
-                            {
-                                "symbols": [
-                                    "SEVEN",
-                                    "YELLOW_GEM",
-                                    "BAR"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "BAR",
-                                    "EXPANDING_WILD",
-                                    "ORANGE_GEM"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "ORANGE_GEM",
-                                    "BAR",
-                                    "BAR"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "BLUE_GEM",
-                                    "YELLOW_GEM",
-                                    "SEVEN"
-                                ]
-                            }
-                        ],
-                        "expansionIndexes": [
-                            1,
-                            2
-                        ],
-                        "expandedReels": [
-                            {
-                                "symbols": [
-                                    "SEVEN",
-                                    "YELLOW_GEM",
-                                    "BAR"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "ORANGE_GEM",
-                                    "BAR",
-                                    "BAR"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "BLUE_GEM",
-                                    "YELLOW_GEM",
-                                    "SEVEN"
-                                ]
-                            }
-                        ],
-                        "wins": [
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "YELLOW_GEM",
-                                "index": 0,
-                                "symbols": 3,
-                                "amount": 0.5,
-                                "multiplier": 10,
-                                "triggers": [
-                                    "0,1,0",
-                                    "0,1,0",
-                                    "0,1,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "SEVEN",
-                                "index": 1,
-                                "symbols": 3,
-                                "amount": 1.25,
-                                "multiplier": 25,
-                                "triggers": [
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "BAR",
-                                "index": 2,
-                                "symbols": 4,
-                                "amount": 10,
-                                "multiplier": 200,
-                                "triggers": [
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "SEVEN",
-                                "index": 3,
-                                "symbols": 3,
-                                "amount": 1.25,
-                                "multiplier": 25,
-                                "triggers": [
-                                    "1,0,0",
-                                    "0,1,0",
-                                    "0,0,1",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "BAR",
-                                "index": 4,
-                                "symbols": 4,
-                                "amount": 10,
-                                "multiplier": 200,
-                                "triggers": [
-                                    "0,0,1",
-                                    "0,1,0",
-                                    "1,0,0",
-                                    "0,1,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "SEVEN",
-                                "index": 5,
-                                "symbols": 3,
-                                "amount": 1.25,
-                                "multiplier": 25,
-                                "triggers": [
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "0,1,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "BAR",
-                                "index": 6,
-                                "symbols": 4,
-                                "amount": 10,
-                                "multiplier": 200,
-                                "triggers": [
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,1,0",
-                                    "0,0,1",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "YELLOW_GEM",
-                                "index": 7,
-                                "symbols": 3,
-                                "amount": 0.5,
-                                "multiplier": 10,
-                                "triggers": [
-                                    "0,1,0",
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "YELLOW_GEM",
-                                "index": 8,
-                                "symbols": 3,
-                                "amount": 0.5,
-                                "multiplier": 10,
-                                "triggers": [
-                                    "0,1,0",
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "YELLOW_GEM",
-                                "index": 9,
-                                "symbols": 3,
-                                "amount": 0.5,
-                                "multiplier": 10,
-                                "triggers": [
-                                    "0,1,0",
-                                    "1,0,0",
-                                    "0,1,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            }
-                        ],
-                        "totalWin": 35.75
-                    },
-                    {
-                        "reels": [
-                            {
-                                "symbols": [
-                                    "YELLOW_GEM",
-                                    "ORANGE_GEM",
-                                    "GREEN_GEM"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "ORANGE_GEM",
-                                    "BLUE_GEM",
-                                    "BAR"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "ORANGE_GEM",
-                                    "SEVEN",
-                                    "ORANGE_GEM"
-                                ]
-                            }
-                        ],
-                        "expansionIndexes": [
-                            1,
-                            2
-                        ],
-                        "expandedReels": [
-                            {
-                                "symbols": [
-                                    "YELLOW_GEM",
-                                    "ORANGE_GEM",
-                                    "GREEN_GEM"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD",
-                                    "EXPANDING_WILD"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "ORANGE_GEM",
-                                    "BLUE_GEM",
-                                    "BAR"
-                                ]
-                            },
-                            {
-                                "symbols": [
-                                    "ORANGE_GEM",
-                                    "SEVEN",
-                                    "ORANGE_GEM"
-                                ]
-                            }
-                        ],
-                        "wins": [
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "ORANGE_GEM",
-                                "index": 0,
-                                "symbols": 3,
-                                "amount": 0.35,
-                                "multiplier": 7,
-                                "triggers": [
-                                    "0,1,0",
-                                    "0,1,0",
-                                    "0,1,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "YELLOW_GEM",
-                                "index": 1,
-                                "symbols": 3,
-                                "amount": 0.5,
-                                "multiplier": 10,
-                                "triggers": [
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "RIGHT_TO_LEFT",
-                                "symbol": "ORANGE_GEM",
-                                "index": 1,
-                                "symbols": 4,
-                                "amount": 0.75,
-                                "multiplier": 15,
-                                "triggers": [
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "GREEN_GEM",
-                                "index": 2,
-                                "symbols": 3,
-                                "amount": 0.4,
-                                "multiplier": 8,
-                                "triggers": [
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "YELLOW_GEM",
-                                "index": 3,
-                                "symbols": 3,
-                                "amount": 0.5,
-                                "multiplier": 10,
-                                "triggers": [
-                                    "1,0,0",
-                                    "0,1,0",
-                                    "0,0,1",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "GREEN_GEM",
-                                "index": 4,
-                                "symbols": 3,
-                                "amount": 0.4,
-                                "multiplier": 8,
-                                "triggers": [
-                                    "0,0,1",
-                                    "0,1,0",
-                                    "1,0,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "YELLOW_GEM",
-                                "index": 5,
-                                "symbols": 3,
-                                "amount": 0.5,
-                                "multiplier": 10,
-                                "triggers": [
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "0,1,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "RIGHT_TO_LEFT",
-                                "symbol": "ORANGE_GEM",
-                                "index": 5,
-                                "symbols": 4,
-                                "amount": 0.75,
-                                "multiplier": 15,
-                                "triggers": [
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "0,1,0",
-                                    "1,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "GREEN_GEM",
-                                "index": 6,
-                                "symbols": 3,
-                                "amount": 0.4,
-                                "multiplier": 8,
-                                "triggers": [
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,1,0",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "ORANGE_GEM",
-                                "index": 7,
-                                "symbols": 3,
-                                "amount": 0.35,
-                                "multiplier": 7,
-                                "triggers": [
-                                    "0,1,0",
-                                    "0,0,1",
-                                    "0,0,1",
-                                    "0,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "ORANGE_GEM",
-                                "index": 8,
-                                "symbols": 4,
-                                "amount": 0.75,
-                                "multiplier": 15,
-                                "triggers": [
-                                    "0,1,0",
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "1,0,0",
-                                    "0,0,0"
-                                ]
-                            },
-                            {
-                                "direction": "LEFT_TO_RIGHT",
-                                "symbol": "ORANGE_GEM",
-                                "index": 9,
-                                "symbols": 4,
-                                "amount": 0.75,
-                                "multiplier": 15,
-                                "triggers": [
-                                    "0,1,0",
-                                    "1,0,0",
-                                    "0,1,0",
-                                    "1,0,0",
-                                    "0,0,0"
-                                ]
-                            }
-                        ],
-                        "totalWin": 6.4
-                    }
-                ],
-                "stake": gameInfo.stake,
-                "totalWin": 50
-            },            
+        const bonusParams = {
+            stake : gameInfo.stake,
+            totalWin : gameInfo.totalWin,
+            bonusReelInfo : params.bonusReelInfo
         }
+        const bonusResp = generateBonusResponse( bonusParams )
         Object.assign( response, bonusResp );
     }
 
@@ -964,18 +481,18 @@ export const generateChooseCellResponse = ( params:any ) => {
             "userId": params.userId,
             "gameInstanceId": params.gameInstanceId,
             "currencyCode": params.currency,
-            "state": Contants.STATES[ state ],
-            "action": Contants.ACTIONS[ params.actionFlag ],
+            "state": Constants.STATES[ state ],
+            "action": Constants.ACTIONS[ params.actionFlag ],
             "stake": gameInfo.stake,
             "totalStake": gameInfo.totalStake,
-            "spinsRemaining": ( gameInfo.spinsRemaining+1 ),
+            "spinsRemaining": gameInfo.spinsRemaining,
             "freeSpinsRemaining": 0,
             "freePurchaseSpinsRemaining": gameInfo.fspSpinsRemaining,
             "purchaseSpinsRemaining": gameInfo.fpSpinsRemaining,
             "freeSpinsAwarded": 0,
             "freePurchaseSpinsAwarded": gameInfo.isFreeSpin ? 1 : 0,
             "spin": {
-                "type": Contants.SPINTYPES[ spinType ],
+                "type": Constants.SPINTYPES[ spinType ],
                 "symbols": gameInfo.symbols,
                 "jokerIndexes": gameInfo.jokerIndexes,
                 "jokerCells": gameInfo.jokerCells,
@@ -999,27 +516,69 @@ export const generateChooseCellResponse = ( params:any ) => {
     return response;
 }
 
-export const generateCollectResponse = () => {
+export const generateCollectResponse = ( params:any ) => {
+    const gameInfo = params.gameInfo;
     const response = {
-        "wrapper": {},
-        "balance": {
-            "cash": 999.5,
-            "bonus": 0,
-            "total": 999.5,
-            "currencyCode": "EUR"
-        },
         "game": {
-            "userId": 24177383,
-            "ticket": {
-                "id": 686,
-                "rows": 5,
-                "columns": 5,
-                "cells": "11,24,36,56,71,9,17,44,58,69,3,18,34,49,63,12,29,32,53,70,2,28,37,52,74",
-                "matches": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+            "userId": 26787348,
+            "gameInstanceId": 94674817,
+            "currencyCode": params.currency,
+            "state": "COMPLETE",
+            "action": "NONE",
+            "stake": gameInfo.stake,
+            "totalStake": gameInfo.totalStake,
+            "spinsRemaining": gameInfo.spinsRemaining,
+            "freeSpinsRemaining": 0,
+            "freePurchaseSpinsRemaining": gameInfo.fspSpinsRemaining,
+            "purchaseSpinsRemaining": gameInfo.fpSpinsRemaining,
+            "freeSpinsAwarded": 0,
+            "freePurchaseSpinsAwarded": 1, // gameInfo.isFreeSpin ? 1 : 0,
+            "spin": {
+                "type": "FREE_PURCHASE",
+                "symbols": [],
+                "jokerIndexes": [],
+                "jokerCells": [],
+                "superJokerIndexes": [],
+                "superJokerCells": [],
+                "respinIndexes": [],
+                "matches": [],
+                "symbolWins": [],
+                "totalSymbolWin": 0,
+                "purpleGemIndexes": [],
+                "freeSpinIndexes": []
             },
-            "state": "PURCHASE_ENTRY"
+            "symbolWins": [],
+            "patternWin": {
+                "amount": 0,
+                "matchedPatterns": gameInfo.gameMatches.length
+            },
+            "spinPrice": 0.37,
+            "matchedPatterns": gameInfo.gameMatches.length,
+            "totalPatternWin": 0,
+            "totalSymbolWin": gameInfo.totalSymbolWin,
+            "totalWin": gameInfo.totalWin
+        },
+        "balance": {
+            "cash": params.balance,
+            "bonus": 0,
+            "total": params.balance,
+            "currencyCode": params.currency
+        },
+        "wrapper": {
+            "postWager": false,
+            "winProcessorRsp": null,
+            "gameInstanceId": 94674817
         },
         "response": 0
+    }
+    if( params.actionFlag === 3 ) {
+        const bonusParams = {
+            stake : gameInfo.stake,
+            totalWin : gameInfo.totalWin,
+            bonusReelInfo : params.bonusReelInfo
+        }
+        const bonusResp = generateBonusResponse( bonusParams );
+        Object.assign( response, bonusResp );
     }
     // const response = collects[ ctid ];
     // ctid++;
