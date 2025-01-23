@@ -21,16 +21,15 @@ export const connect = async (dbName : string) => {
 export const addUser = async( newUser:any ) => {
     await Users.deleteOne({ token : newUser.token }) ;
     newUser["gameStatus"] = {
-        // stake   : 0,
         stake   : 0.5,
         fsStake : 0,
         totalStake  : 0,
-        // state   : 0,
         isFreeSpin  : false,
         fsCount : -1,
         fpSpinsRemaining : 40,
-        fspSpinsRemaining   : 5,
-
+        fsSpinsRemaining : 0,
+        fspSpinsRemaining : 5,
+        fsAwarded : 0,
         isChoose    : false,
         chooseTime  : 0,
         spinsRemaining  : 10,
@@ -59,7 +58,6 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
         { token: token },
         {
             $set : {
-                // "property.lastId" : userInfo.property.lastId,
                 gameStatus: {
                     stake : userInfo.gameStatus.stake,
                     fsStake : userInfo.gameStatus.fsStake,
@@ -68,7 +66,9 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                     isFreeSpin  : userInfo.gameStatus.isFreeSpin,
                     fsCount     : userInfo.gameStatus.fsCount,
                     fpSpinsRemaining : userInfo.gameStatus.fpSpinsRemaining,
-                    fspSpinsRemaining   : userInfo.gameStatus.fspSpinsRemaining,
+                    fsSpinsRemaining : userInfo.gameStatus.fsSpinsRemaining,
+                    fspSpinsRemaining : userInfo.gameStatus.fspSpinsRemaining,
+                    fsAwarded   : userInfo.gameStatus.fsAwarded,
 
                     isChoose    : userInfo.gameStatus.isChoose,
                     chooseTime  : userInfo.gameStatus.chooseTime,

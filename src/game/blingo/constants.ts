@@ -39,7 +39,7 @@ export const PAYTABLE : { [ key:number ] : number[] } = {
     100 : [ 2.5, 1, 0.5 ],  // 
 };
 
-export const SYMBOLTYPES : { [ key:number ] : string } = {
+export const SYMBOLDICT : { [ key:number ] : string } = {
     3 : "BLUE_GEM",
     4 : "ORANGE_GEM",
     5 : "GREEN_GEM",
@@ -75,5 +75,5 @@ export const SLOTPAYLINES : { [ key:number ] : number[] } = {
     6 : [ 2,2,1,2,2 ],
     7 : [ 1,2,2,2,1 ],
     8 : [ 1,0,0,0,1 ],
-    9 : [ 1,0,1,0,1 ],
+    9 : [ 1,0,1,0,1 ]
 }
