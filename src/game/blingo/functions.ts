@@ -28,7 +28,7 @@ export const getCurrentTime = () => {
 let round = 0, cid = 0, sid = 0, spid = 0, rid = 0 ;
 const maxVal = 75, wild = 12;
 const cellsArr = [
-    [ 6,21,39,48,71, 1,26,36,53,66, 5,16,38,50,69, 13,25,31,46,68, 14,18,41,60,72 ]
+    [ 5,25,31,53,61, 7,22,43,55,65, 11,18,38,46,74, 3,21,33,49,64, 13,26,40,56,71 ]
 ];
 
 export const getCells = () => {
@@ -42,8 +42,11 @@ export const getCells = () => {
 
 export const getSymbols = ( params:any ) => {
     const symbolsArr = [
-        ["11", "25", "33", "47", "65"], ["J", "21", "D", "FS", "64"], ["3", "18", "D", "49", "61"], ["15", "PG", "D", "49", "70"], ["D", "18", "D", "58", "D"], ["PG", "20", "39", "59", "66"], ["4", "28", "40", "56", "PG"], ["2", "26", "37", "47", "PG"], ["PG", "19", "31", "60", "71"], 
-        [ "J", "20", "D", "54", "62" ], ["13", "PG", "43", "54", "63"], ["7", "26", "37", "PG", "66"], [], ["5", "26", "34", "PG", "66"], [ "11", "26", "40", "60", "66" ], [ "2", "28", "38", "55", "67" ], [ "15", "17", "44", "58", "73" ], [ "13", "18", "36", "D", "75" ], [ "14", "30", "45", "59", "J" ], [ "9", "PG", "31", "58", "63" ], [ "4", "26", "36", "55", "71" ], [ "13", "PG", "D", "PG", "65" ], [ "2", "21", "44", "57", "71" ], [ "11", "20", "40", "60", "62" ], [ "6", "PG", "44", "54", "D" ], [ "14", "26", "41", "54", "75" ], [ "PG", "23", "J", "48", "71" ], [ "10", "19", "41", "53", "64" ], [ "9", "PG", "32", "46", "72" ], [ "14", "28", "D", "52", "J" ], [ "4", "22", "44", "55", "63" ], [ "15", "26", "D", "PG", "64" ], [ "13", "D", "D", "49", "61" ], [ "14", "30", "PG", "57", "67" ], [ "8", "17", "31", "56", "J" ], [ "6", "16", "PG", "58", "PG" ], [ "2", "J", "J", "59", "73" ], [ "7", "21", "PG", "57", "69" ], [ "10", "26", "39", "58", "66" ], [ "13", "22", "45", "57", "D" ], [ "J", "25", "D", "PG", "73" ]
+        ["1", "RJ", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"], ["12", "J", "45", "51", "64"], ["5", "RJ", "D", "58", "75"], ["11", "RJ", "38", "J", "69"], ["3", "30", "31", "56", "74"], 
+        // FREE_PURCHASE_SPIN
+        ["13", "27", "PG", "60", "70"], [], ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], ["11", "23", "43", "52", "68"], ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
+        // purchase 49,74->49,71
+        ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], ["13", "18", "37", "53", "68"]
     ];
     // [  ], [  ], [  ], [  ],
     let symbols = symbolsArr[ sid ];
@@ -54,22 +57,33 @@ export const getSymbols = ( params:any ) => {
     // let symbols = misMatched.slice(0,5).map(String);
     // const specRand = Math.random();
     // if( specRand>0.5 ) {
-        //     const posRand = Math.floor( 5*Math.random() );
-        //     if( specRand>0.95 ) symbols[ posRand ] = "FS";
-        //     else if( specRand>0.85 ) symbols[ posRand ] = "SJ";
-        //     else if( specRand>0.74 ) symbols[ posRand ] = "PG";
-        //     else if( specRand>0.74 ) symbols[ posRand ] = "RJ";
-        //     else symbols[ posRand ] = "J";
-        // }
+    //     const posRand = Math.floor( 5*Math.random() );
+    //     if( specRand>0.95 ) symbols[ posRand ] = "FS";
+    //     else if( specRand>0.85 ) symbols[ posRand ] = "SJ";
+    //     else if( specRand>0.74 ) symbols[ posRand ] = "PG";
+    //     else if( specRand>0.74 ) symbols[ posRand ] = "RJ";
+    //     else symbols[ posRand ] = "J";
+    // }
 
     return symbols;
 }
 
+export const checkRowCells = ( gameMatches:number[], row:number ) => {
+    let cnt = 0;
+    gameMatches.forEach((val)=>{
+        if( val%5===row ) cnt++
+    })
+    if( cnt===5 ) return false;
+    else return true;
+}
+
 export const calcSpinPrice = ( params:any ) => {
+    const rtps = [ 0.96, 0.94, 0.92 ];
     const spinPrices = [ 0.62, 1.27, 3.03, 8.47, 5.39 ];
-    const price = spinPrices[ spid ];
-    spid++;
-    // const price = params.totalMatches===25 ? 0 : Math.round( 100*( maxVal-params.totalMatches )*params.stake*params.rtp / ( 25-params.totalMatches ) )/100;
+    // const price = spinPrices[ spid ];
+    // spid++;
+    console.log(`spin price is ${ params.stake }, ---> ${ params.totalMatches }, ${ params.patternLength } `)
+    const price = params.totalMatches.length===25 ? 0 : params.patternLength===0 || params.patternLength===12 ? 0.01 : Math.round( 100*( maxVal-params.totalMatches.length )*params.stake*rtps[ params.rtp-1 ] / ( 12-params.patternLength ) )/100;
     return price;
 }
 
@@ -143,7 +157,7 @@ export const generateStartGameResponse = (params: any) => {
             "state": "STANDARD_SPIN",
             "action": "SPIN",
             "stake": params.stake,
-            "totalStake": 0.5,
+            "totalStake": params.stake,
             "spinsRemaining": 10,
             "freeSpinsRemaining": 0,
             "freePurchaseSpinsRemaining": 5,
@@ -265,15 +279,14 @@ const generateGameResponse = ( params: any ) => {
     const gameInfo = params.gameInfo;
     const matches = generateMatchePatterns( gameInfo.spinMatches, gameInfo.cells, params.patternInfo );
     let state = 0, spinType = 0;
-    if( gameInfo.fsCount === 0 ) {
+    if( gameInfo.purCount===0 ) {
         state = 1;
-    } else if( gameInfo.fsCount>0 ) {
-        if( gameInfo.fsCount===1) state = 2, spinType = 2 ;
-        if( gameInfo.fsCount > 1) state = 2, spinType = 3 ;
+    } else if( gameInfo.purCount>0 ) {
+        if( gameInfo.purCount===1 ) state=2, spinType=2 ;
+        if( gameInfo.purCount > 1 ) state=2, spinType=3 ;
     } 
-
-    if( params.actionFlag === 2 ) state = 3;
-
+    if( params.actionFlag===2 ) state=3;
+    console.log(``)    
     const response = {
         "game": {
             "userId": params.userId,
@@ -288,7 +301,7 @@ const generateGameResponse = ( params: any ) => {
             "freePurchaseSpinsRemaining": gameInfo.fspSpinsRemaining,
             "purchaseSpinsRemaining": gameInfo.fpSpinsRemaining,
             "freeSpinsAwarded": gameInfo.fsAwarded,
-            "freePurchaseSpinsAwarded": gameInfo.fsCount > 0 ? 1 : 0,
+            "freePurchaseSpinsAwarded": gameInfo.purCount > 0 ? 1 : 0,
             "spin": {
                 "type": Constants.SPINTYPES[ spinType ],
                 "symbols": gameInfo.symbols,
@@ -388,9 +401,9 @@ export const generateBonusResponse = ( params: any ) => {
         1 : "RIGHT_TO_LEFT"
     };
     const spins : any[] = [];
-
+    let totalWin = 0;
     params.bonusReelInfo.reelMrx.forEach((subReels: number[][], idx: number) => {
-        let totalWin = 0;
+        let spinTotalWin = 0;
         let isExpand = false;
         const expansionIndexes : number[] = [];
         const subPayLineInfo = params.bonusReelInfo.payLineInfo[idx];
@@ -419,13 +432,14 @@ export const generateBonusResponse = ( params: any ) => {
             const winItem = {
                 direction: directDict[ payItem.direct ],
                 symbol: Constants.SYMBOLDICT[ payItem.symbol ],
-                index: payItem.line,
+                index: Number( payItem.line ),
                 symbols: payItem.sameCnt,
                 amount: payItem.profit,
                 multiplier: Constants.PAYTABLE[ payItem.symbol ][ 5-payItem.sameCnt ],
                 triggers: generateTriggers( payItem.line, payItem.sameCnt )
             }
-            totalWin = Math.round(totalWin*100+payItem.profit*100)/100;
+            spinTotalWin = Math.round(spinTotalWin*100+payItem.profit*100)/100 ;
+            totalWin = Math.round( totalWin*100+payItem.profit*100 )/100 ;
             wins.push( winItem );
         })
 
@@ -433,7 +447,7 @@ export const generateBonusResponse = ( params: any ) => {
             reels : reels,
             expansionIndexes : expansionIndexes,
             wins : wins,
-            totalWin : totalWin
+            totalWin : spinTotalWin
         };
 
         if( isExpand ) {
@@ -450,7 +464,7 @@ export const generateBonusResponse = ( params: any ) => {
             gameInstanceId : 94674369,
             spins : spins,
             stake : params.stake,
-            totalWin : params.totalWin,
+            totalWin : totalWin,
         }
     }
    return bonusResp;
@@ -464,7 +478,7 @@ export const generateSpinResponse = ( params: any ) => {
         const winResp = {
             "symbolWins": gameInfo.symbolWins,
             "patternWin": {
-                "amount": 50,
+                "amount": params.bonusReelInfo.bonusProfit,
                 "matchedPatterns": wild
             },
         };
@@ -478,7 +492,7 @@ export const generateSpinResponse = ( params: any ) => {
         Object.assign( response, bonusResp );
     }
 
-    if( gameInfo.fsCount>1 ) {
+    if( gameInfo.purCount>1 ) {
         const fsResp = {
             "balance": {
                 "cash": params.balance,
@@ -500,11 +514,12 @@ export const generateSpinResponse = ( params: any ) => {
 export const generateChooseCellResponse = ( params:any ) => {
     const gameInfo = params.gameInfo;
     const response = generateGameResponse( params );
+    console.log(`---------> actionFlag=${params.actionFlag}`);
     if( params.actionFlag === 2 ) {
         const winResp = {
             "symbolWins": gameInfo.symbolWins,
             "patternWin": {
-                "amount": 50,
+                "amount": params.bonusReelInfo.bonusProfit,
                 "matchedPatterns": wild
             },
         };
@@ -522,6 +537,7 @@ export const generateChooseCellResponse = ( params:any ) => {
 
 export const generateCollectResponse = ( params:any ) => {
     const gameInfo = params.gameInfo;
+    console.log(`gameInfo.symbolWins=`, gameInfo.symbolWins);
     const response = {
         "game": {
             "userId": 26787348,
@@ -551,16 +567,16 @@ export const generateCollectResponse = ( params:any ) => {
                 "purpleGemIndexes": [],
                 "freeSpinIndexes": []
             },
-            "symbolWins": [],
+            "symbolWins": gameInfo.symbolWins,
             "patternWin": {
-                "amount": 0,
-                "matchedPatterns": gameInfo.gameMatches.length
+                "amount": params.bonusReelInfo.bonusProfit,
+                "matchedPatterns": gameInfo.matchPatterns.length
             },
             "spinPrice": params.spinPrice,
-            "matchedPatterns": gameInfo.gameMatches.length,
-            "totalPatternWin": 0,
+            "matchedPatterns": gameInfo.matchPatterns.length,
+            "totalPatternWin": params.bonusReelInfo.bonusProfit,
             "totalSymbolWin": gameInfo.totalSymbolWin,
-            "totalWin": gameInfo.totalWin
+            "totalWin": Math.round(gameInfo.totalWin*100+params.bonusProfit*100)/100
         },
         "balance": {
             "cash": params.balance,
