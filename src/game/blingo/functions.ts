@@ -216,48 +216,65 @@ const checkPayLines = ( reels:number[][][], stake:number ) => {
         const payInfo : any[] = [];
         for (const key in Constants.SLOTPAYLINES) {
             if( Constants.SLOTPAYLINES.hasOwnProperty(key) ) {
-                const payItem : any = {
+                const leftPayItem : any = {
                     symbol : 0,
                     sameCnt : 0,
                     line : key,
                     direct : 0,
                     profit : 0
                 };
+                const rightPayItem : any = {
+                    symbol : 0,
+                    sameCnt : 0,
+                    line : key,
+                    direct : 1,
+                    profit : 0
+                };
                 const line = Constants.SLOTPAYLINES[ key ];
-                const leftSymbol = subReels[ 0 ][line[0]];
-                const rightSymbol = subReels[ 4 ][line[0]];
-                let leftSameCnt = 1, rightSameCnt = 1;
-                // RIGHT_TO_LEFT
-                for( let i=1; i<5; i++ ) {
+                let leftSymbol = subReels[ 0 ][line[0]];
+                let rightSymbol = subReels[ 4 ][line[0]];
+                let leftSameCnt = 0, rightSameCnt = 0;
+                if( leftSymbol===wild ) {
+                    for( let i=1; i<5; i++ ) {
+                        if( subReels[i][ line[i] ]!==wild ) leftSymbol = subReels[i][ line[i] ];
+                    }                    
+                }
+
+                if( rightSymbol===wild ) {
+                    for( let i=3; i>=0; i-- ) {
+                        if( subReels[i][ line[i] ]!==wild ) rightSymbol = subReels[i][ line[i] ];
+                    }                    
+                }
+                // LEFT_TO_RIGHT
+                for( let i=0; i<5; i++ ) {
                     if( subReels[ i ][ line[i] ] === leftSymbol || subReels[ i ][ line[i] ] === wild ) leftSameCnt++;
                     else break;
                 }
                 if( leftSameCnt>=3 ) {
-                    payItem.symbol = leftSymbol;
-                    payItem.sameCnt = leftSameCnt;
-                    payItem.direct = 0;
-                    payItem.profit = Math.round(stake*Constants.PAYTABLE[ leftSymbol ][ 5-leftSameCnt ]*10)/100;
-                    bonusProfit = Math.round( bonusProfit*100 + payItem.profit*100 )/100;
-                    payInfo.push(payItem);
+                    leftPayItem.symbol = leftSymbol;
+                    leftPayItem.sameCnt = leftSameCnt;
+                    leftPayItem.profit = Math.round(stake*Constants.PAYTABLE[ leftSymbol ][ 5-leftSameCnt ]*10)/100;
+                    bonusProfit = Math.round( bonusProfit*100 + leftPayItem.profit*100 )/100;
+                    payInfo.push(leftPayItem);
                 }
-                // LEFT_TO_RIGHT
-                for( let i=3; i>0; i-- ) {
+                // RIGHT_TO_LEFT
+                for( let i=4; i>=0; i-- ) {
                     if( subReels[ i ][ line[i] ] === rightSymbol || subReels[ i ][ line[i] ] === wild ) rightSameCnt++;
                     else break;
                 }
                 if( rightSameCnt>=3 ) {
-                    payItem.symbol = rightSymbol;
-                    payItem.sameCnt = rightSameCnt;
-                    payItem.direct = 1;
-                    payItem.profit = Math.round(stake*Constants.PAYTABLE[ rightSymbol ][ 5-rightSameCnt ]*10)/100;
-                    bonusProfit = Math.round( bonusProfit*100 + payItem.profit*100 )/100;
-                    payInfo.push(payItem);
+                    rightPayItem.symbol = rightSymbol;
+                    rightPayItem.sameCnt = rightSameCnt;
+                    rightPayItem.direct = 1;
+                    rightPayItem.profit = Math.round(stake*Constants.PAYTABLE[ rightSymbol ][ 5-rightSameCnt ]*10)/100;
+                    bonusProfit = Math.round( bonusProfit*100 + rightPayItem.profit*100 )/100;
+                    payInfo.push(rightPayItem);
                 }
             }
         }
         reelPayInfo.push( payInfo );
     });
-    
+    // console.log(`reelPayInfo=`, reelPayInfo)
     return {
         payInfo : reelPayInfo,
         totalProfit : bonusProfit
@@ -341,11 +358,7 @@ const generateBalanceResponse = ( balance:number, currency:string ) => {
 }
 // [ [  ], [  ], [  ], [  ], [  ] ],
 const fsReels = [
-    // [ [ 7,6,6 ], [ 5,8,12 ], [ 5,7,4 ], [ 5,7,7 ], [ 8,3,6 ] ],
-    // [ [ 8,7,7 ], [ 12,12,12 ], [ 7,3,6 ], [ 8,4,6 ], [ 3,4,7 ] ],
-    [ [ 8,5,4 ], [ 8,4,3 ], [ 4,12,3 ], [ 5,5,7 ], [ 6,3,7 ] ],
-    // [ [ 7,6,8 ], [ 8,12,4 ], [ 12,12,12 ], [ 4,8,8 ], [ 3,6,7 ] ],
-    // [ [ 6,4,5 ], [ 12,12,12 ], [ 12,12,12 ], [ 4,3,8 ], [ 4,7,4 ] ],
+    [ [ 12,6,12 ], [ 7,8,6 ], [ 7,7,6 ], [ 8,12,6 ], [ 3,12,5 ] ],
 ];
 
 export const generateBonusSpins = ( winSymbol:number, stake:number ) => {
@@ -384,8 +397,8 @@ export const generateBonusSpins = ( winSymbol:number, stake:number ) => {
             expSubReels[ k ][ Constants.SLOTPAYLINES[line][k] ] = winSymbol;
         }
 
-        reels = fsReels[ rid ];
-        expSubReels = fsReels[ rid ];
+        // reels = fsReels[ rid ];
+        // expSubReels = fsReels[ rid ];
         // rid++;
         reelMrx.push( [ ...reels ] );
         const flatReel = expSubReels.flat();

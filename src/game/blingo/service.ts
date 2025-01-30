@@ -10,7 +10,7 @@ export const blingoService = {
         const userInfo = await Models.getUserInfo( token );
         if(userInfo === null) return Constants.ERRORDESCRIPTION[ 6 ];
         const action = actionParams.action;
-        console.log(`--------------------> action :: ${ action } ------------------------->`);
+        console.log(`-----------------> action :: ${ action } ---------------------->`);
         const cells : number[] = action === "currentGame" ? Functions.getCells() : [];
         let symbols : string[] = [];
         let winSymbol = 0;
@@ -214,6 +214,11 @@ export const blingoService = {
                 await Models.updateUserBalance( userInfo.token, userInfo.balance );
                 break;
             case "spin" :
+                winSymbol = 8;
+                bonusReelInfo = Functions.generateBonusSpins( winSymbol, userInfo.gameStatus.stake );
+                bonusProfit = bonusReelInfo.bonusProfit;
+
+            /*
                 sid++;
                 if( sid === 2 ) userInfo.gameStatus.respinIndexes.length = 0;
                 if( userInfo.gameStatus.spinsRemaining === 0 ) {
@@ -255,6 +260,7 @@ export const blingoService = {
                     await Models.updateUserBalance( userInfo.token, userInfo.balance )
                 }
                 if( userInfo.gameStatus.spinsRemaining > 0 ) userInfo.gameStatus.spinsRemaining--;
+            */
                 break;
             case "chooseCell" :
                 userInfo.gameStatus.chooseTime--;
