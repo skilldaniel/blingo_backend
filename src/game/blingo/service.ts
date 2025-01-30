@@ -93,6 +93,7 @@ export const blingoService = {
                                 }
                                 break;
                             case "FS":
+                                userInfo.gameStatus.spinsRemaining += 5;
                                 userInfo.gameStatus.isFreeSpin = true;
                                 userInfo.gameStatus.fsSpinsRemaining = 1;
                                 userInfo.gameStatus.fsAwarded = 1;
