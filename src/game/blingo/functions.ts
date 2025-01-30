@@ -576,7 +576,7 @@ export const generateCollectResponse = ( params:any ) => {
             "matchedPatterns": gameInfo.matchPatterns.length,
             "totalPatternWin": params.bonusReelInfo.bonusProfit,
             "totalSymbolWin": gameInfo.totalSymbolWin,
-            "totalWin": Math.round(gameInfo.totalWin*100+params.bonusProfit*100)/100
+            "totalWin": Math.round(gameInfo.totalSymbolWin*100+params.bonusProfit*100)/100
         },
         "balance": {
             "cash": params.balance,
