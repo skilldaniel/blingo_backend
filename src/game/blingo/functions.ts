@@ -25,7 +25,7 @@ export const getCurrentTime = () => {
 /**
  * gameRouter
  */
-let round = 0, cid = 0, sid = 0, spid = 0, rid = 0 ;
+let round = 0, sid = 0, rid = 0 ;
 const maxVal = 75, wild = 12;
 const cellsArr = [
     [ 5,25,31,53,61, 7,22,43,55,65, 11,18,38,46,74, 3,21,33,49,64, 13,26,40,56,71 ]
@@ -36,7 +36,6 @@ export const getCells = () => {
     numbers = makeRandArr( numbers );
     // const cells : number[] = numbers.slice(0, 25);
     const cells = cellsArr[ 0 ];
-    // cid++;
     return cells;
 }
 
@@ -79,11 +78,12 @@ export const checkRowCells = ( gameMatches:number[], row:number ) => {
 
 export const calcSpinPrice = ( params:any ) => {
     const rtps = [ 0.96, 0.94, 0.92 ];
-    const spinPrices = [ 0.62, 1.27, 3.03, 8.47, 5.39 ];
-    // const price = spinPrices[ spid ];
-    // spid++;
-    console.log(`spin price is ${ params.stake }, ---> ${ params.totalMatches }, ${ params.patternLength } `)
-    const price = params.totalMatches.length===25 ? 0 : params.patternLength===0 || params.patternLength===12 ? 0.01 : Math.round( 100*( maxVal-params.totalMatches.length )*params.stake*rtps[ params.rtp-1 ] / ( 12-params.patternLength ) )/100;
+    const remainCell = params.totalMatches.length;
+    const price = params.totalMatches.length===25 ? 0 : 
+                    params.patternLength===0 || params.patternLength===12 ? 0.01 : 
+                        Math.round( 100*params.stake*rtps[params.rtp-1]*(maxVal-remainCell) / ((25-remainCell)*(12-params.patternLength)) )/100;
+
+    console.log(`spin price is ${price}=${ params.stake }*${rtps[ params.rtp-1 ]}*${25-remainCell}/( ${ 12-params.patternLength }), length=${ remainCell } `);
     return price;
 }
 
@@ -108,25 +108,31 @@ export const generateMatchePatterns = ( matchesArr:number[], cells:number[], pat
     return matches;
 }
 
-export const checkSlingoWinLines = ( gameMatches:number[], spinMatches : number[] ) => {
+export const checkSlingoWinLines = ( matchedPatterns:number[], gameMatches:number[], spinMatches : number[] ) => {
     const patterns  : number[] = [];
     const patternInfo   : any[] = [];
     if( gameMatches.length>5 ) {
+        let slingoWinLines: number[] = Object.keys( Constants.SLINGOWINLINES ).map(Number);
+        if( matchedPatterns.length > 0 ) {
+            slingoWinLines = slingoWinLines.filter(num=>!matchedPatterns.includes(Number(num)));
+        }
         for( const key in Constants.SLINGOWINLINES ) {
-            const winLine = Constants.SLINGOWINLINES[key];
-            spinMatches.forEach(( idx:number ) => {
-                if( winLine.includes( idx )) {
-                    const isPattern = winLine.every( element => gameMatches.includes(element) );
-                    if( isPattern ) {
-                        patterns.push( Number(key) );
-                        const patternItem = {
-                            number : idx,
-                            patterns : Number(key)
-                        };
-                        patternInfo.push( patternItem );
+            if( slingoWinLines.includes(Number(key)) ) {
+                const winLine = Constants.SLINGOWINLINES[key];
+                spinMatches.forEach(( idx:number ) => {
+                    if( winLine.includes( idx )) {
+                        const isPattern = winLine.every( element => gameMatches.includes(element) );
+                        if( isPattern ) {
+                            patterns.push( Number(key) );
+                            const patternItem = {
+                                number : idx,
+                                patterns : Number(key)
+                            };
+                            patternInfo.push( patternItem );
+                        }
                     }
-                }
-            })
+                })
+            }
         }
     }
     return {
@@ -203,12 +209,10 @@ const selectPayLine = ( idx:number ) => {
 }
 
 const checkPayLines = ( reels:number[][][], stake:number ) => {
-    // LEFT_TO_RIGHT
     let bonusProfit = 0;
     const reelPayInfo : any[] = [];
 
-    reels.forEach((subReels:number[][], height:number) => {
-        // console.log( `subReels =`, subReels );
+    reels.forEach(( subReels:number[][] ) => {
         const payInfo : any[] = [];
         for (const key in Constants.SLOTPAYLINES) {
             if( Constants.SLOTPAYLINES.hasOwnProperty(key) ) {
@@ -236,14 +240,12 @@ const checkPayLines = ( reels:number[][][], stake:number ) => {
                     bonusProfit = Math.round( bonusProfit*100 + payItem.profit*100 )/100;
                     payInfo.push(payItem);
                 }
-
                 // LEFT_TO_RIGHT
                 for( let i=3; i>0; i-- ) {
                     if( subReels[ i ][ line[i] ] === rightSymbol || subReels[ i ][ line[i] ] === wild ) rightSameCnt++;
                     else break;
                 }
                 if( rightSameCnt>=3 ) {
-                    // console.log( `rightSymbol =`, rightSymbol, key );
                     payItem.symbol = rightSymbol;
                     payItem.sameCnt = rightSameCnt;
                     payItem.direct = 1;
@@ -286,7 +288,6 @@ const generateGameResponse = ( params: any ) => {
         if( gameInfo.purCount > 1 ) state=2, spinType=3 ;
     } 
     if( params.actionFlag===2 ) state=3;
-    console.log(``)    
     const response = {
         "game": {
             "userId": params.userId,
@@ -325,6 +326,18 @@ const generateGameResponse = ( params: any ) => {
         "response": 0
     }
     return response;
+}
+
+const generateBalanceResponse = ( balance:number, currency:string ) => {
+    const balanceResp = {
+        balance: {
+            cash: balance,
+            bonus: 0,
+            total: balance,
+            currencyCode: currency
+        },        
+    };
+    return balanceResp;
 }
 // [ [  ], [  ], [  ], [  ], [  ] ],
 const fsReels = [
@@ -490,23 +503,21 @@ export const generateSpinResponse = ( params: any ) => {
         }
         const bonusResp = generateBonusResponse( bonusParams )
         Object.assign( response, bonusResp );
+        const balanceResp = generateBalanceResponse( params.balance, params.currency );
+        Object.assign( response, balanceResp );
     }
 
     if( gameInfo.purCount>1 ) {
+        const balanceResp = generateBalanceResponse( params.balance, params.currency );
         const fsResp = {
-            "balance": {
-                "cash": params.balance,
-                "bonus": 0,
-                "total": params.balance,
-                "currencyCode": params.currency
-            },
             "wrapper": {
                 "postWager": true,
                 "winProcessorRsp": null,
                 "activeBalance": "CASH"
             }
         }
-        Object.assign( response, fsResp );
+        Object.assign( balanceResp, fsResp );
+        Object.assign( response, balanceResp );
     }
     return response;
 }
@@ -514,7 +525,6 @@ export const generateSpinResponse = ( params: any ) => {
 export const generateChooseCellResponse = ( params:any ) => {
     const gameInfo = params.gameInfo;
     const response = generateGameResponse( params );
-    console.log(`---------> actionFlag=${params.actionFlag}`);
     if( params.actionFlag === 2 ) {
         const winResp = {
             "symbolWins": gameInfo.symbolWins,
@@ -531,13 +541,14 @@ export const generateChooseCellResponse = ( params:any ) => {
         }
         const bonusResp = generateBonusResponse( bonusParams );
         Object.assign( response, bonusResp );
+        const balanceResp = generateBalanceResponse( params.balance, params.currency );
+        Object.assign( response, balanceResp );
     }
     return response;
 }
 
 export const generateCollectResponse = ( params:any ) => {
     const gameInfo = params.gameInfo;
-    console.log(`gameInfo.symbolWins=`, gameInfo.symbolWins);
     const response = {
         "game": {
             "userId": 26787348,
@@ -576,7 +587,7 @@ export const generateCollectResponse = ( params:any ) => {
             "matchedPatterns": gameInfo.matchPatterns.length,
             "totalPatternWin": params.bonusReelInfo.bonusProfit,
             "totalSymbolWin": gameInfo.totalSymbolWin,
-            "totalWin": Math.round(gameInfo.totalSymbolWin*100+params.bonusProfit*100)/100
+            "totalWin": Math.round(gameInfo.totalSymbolWin*100+params.bonusReelInfo.bonusProfit*100)/100
         },
         "balance": {
             "cash": params.balance,
