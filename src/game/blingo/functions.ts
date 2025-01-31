@@ -617,9 +617,9 @@ export const generateCollectResponse = ( params:any ) => {
             },
             "spinPrice": params.spinPrice,
             "matchedPatterns": gameInfo.matchPatterns.length,
-            "totalPatternWin": params.bonusReelInfo.bonusProfit,
+            "totalPatternWin": params.actionFlag===0 ? 0 : params.bonusReelInfo.bonusProfit,
             "totalSymbolWin": gameInfo.totalSymbolWin,
-            "totalWin": Math.round(gameInfo.totalSymbolWin*100+params.bonusReelInfo.bonusProfit*100)/100
+            "totalWin": params.actionFlag===0 ? gameInfo.totalSymbolWin : Math.round(gameInfo.totalSymbolWin*100+params.bonusReelInfo.bonusProfit*100)/100
         },
         "balance": {
             "cash": params.balance,

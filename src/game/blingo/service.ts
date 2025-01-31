@@ -323,6 +323,9 @@ export const blingoService = {
                     actionFlag = 3;
                     userInfo.gameStatus.totalWin = Math.round( userInfo.gameStatus.totalWin*100+bonusProfit*100 )/100;
                 };
+                if( userInfo.gameStatus.matchedPatterns.length<=2 ) {
+                    actionFlag = 0;
+                }
 
                 const collectParams : any = {
                     winSymbol : winSymbol,
