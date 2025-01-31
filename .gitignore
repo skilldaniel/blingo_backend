@@ -26,3 +26,4 @@ dist-ssr
 *.sw?
 .env.template
 /src/public
+package-lock.json

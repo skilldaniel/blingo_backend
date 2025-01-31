@@ -1,12 +1,13 @@
 import * as Constants from '@/game/blingo/constants';
+import isaac from 'isaac';
 
 const getFloorRandom = ( len : number ) => {
-    return Math.floor( Math.random()*len );
+    return Math.floor( isaac.random()*len );
 }
 
 const makeRandArr = ( orgArr:number[] ) => {
     for (let i = orgArr.length - 1; i > 0; i--) {
-        let j = Math.floor(Math.random() * (i + 1));
+        let j = Math.floor(isaac.random() * (i + 1));
         [orgArr[i], orgArr[j]] = [orgArr[j], orgArr[i]];
     }
     return orgArr;
@@ -48,30 +49,38 @@ export const getSymbols = ( params:any ) => {
         ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], ["13", "18", "37", "53", "68"]
     ];
     // [  ], [  ], [  ], [  ],
-    let symbols = symbolsArr[ sid ];
-    sid++;
-    // const totalSymbols = Array.from({ length: maxVal }, (_, i) => i + 1);
-    // let misMatched = totalSymbols.filter( num => !params.gameMatches.includes( num ) );
-    // misMatched = makeRandArr( misMatched );
-    // let symbols = misMatched.slice(0,5).map(String);
-    // const specRand = Math.random();
-    // if( specRand>0.5 ) {
-    //     const posRand = Math.floor( 5*Math.random() );
-    //     if( specRand>0.95 ) symbols[ posRand ] = "FS";
-    //     else if( specRand>0.85 ) symbols[ posRand ] = "SJ";
-    //     else if( specRand>0.74 ) symbols[ posRand ] = "PG";
-    //     else if( specRand>0.74 ) symbols[ posRand ] = "RJ";
-    //     else symbols[ posRand ] = "J";
-    // }
-
+    // let symbols = symbolsArr[ sid ];
+    // sid++;
+    const totalSymbols = Array.from({ length: maxVal }, (_, i) => i + 1);
+    let misMatched = totalSymbols.filter( num => !params.gameMatches.includes( num ) );
+    misMatched = makeRandArr( misMatched );
+    let symbols = misMatched.slice(0,5).map(String);
+    let symCnt = 0;
+    const cntRand = isaac.random();
+    if( cntRand>0.94 ) symCnt = 4;
+    else if( cntRand>0.87 ) symCnt = 3;
+    else if( cntRand>0.79 ) symCnt = 2;
+    else if( cntRand>0.7 ) symCnt = 1;
+    if( symCnt>0 ) {
+        const symbolPoss = makeRandArr( [0,1,2,3,4] );
+        for( let i=0; i<symCnt; i++ ) {
+            const specRand = isaac.random();
+            if( specRand>0.5 ) {
+                if( specRand>0.95 ) symbols[ symbolPoss[i] ] = "FS";
+                else if( specRand>0.88 ) symbols[ symbolPoss[i] ] = "SJ";
+                else if( specRand>0.76 ) symbols[ symbolPoss[i] ] = "RJ";
+                else if( specRand>0.65 ) symbols[ symbolPoss[i] ] = "J";
+                else if( specRand>0.55 ) symbols[ symbolPoss[i] ] = "PG";
+                else symbols[ symbolPoss[i] ] = "D";
+            }
+        }
+    }
     return symbols;
 }
 
 export const checkRowCells = ( gameMatches:number[], row:number ) => {
     let cnt = 0;
-    gameMatches.forEach((val)=>{
-        if( val%5===row ) cnt++
-    })
+    gameMatches.forEach((val)=>{ if( val%5===row ) cnt++ });
     if( cnt===5 ) return false;
     else return true;
 }
@@ -358,21 +367,23 @@ const generateBalanceResponse = ( balance:number, currency:string ) => {
 }
 // [ [  ], [  ], [  ], [  ], [  ] ],
 const fsReels = [
-    [ [ 12,6,12 ], [ 7,8,6 ], [ 7,7,6 ], [ 8,12,6 ], [ 3,12,5 ] ],
+    [ [ 12,6,12 ], [ 9,8,6 ], [ 7,7,5 ], [ 8,12,6 ], [ 3,12,5 ] ],
 ];
 
 export const generateBonusSpins = ( winSymbol:number, stake:number ) => {
     let reels : number[][] = [];
     let expSubReels: number[][] = [];
-    const fullReels = [ 3,4,5,6,7,8,12 ];
-    const cntRand = Math.random();
+    const fullReels = [ 3,4,5,6,7,8 ];
+    const cntRand = isaac.random();
     const maxCnt = 1 ;
     // const maxCnt = cntRand > 0.99 ? 3 : cntRand > 0.5 ? 2 : 1 ;
     const reelMrx : typeof reels[] = [];
     const expReelMrx : typeof reels[] = [];
     let isExpand = false;
-    if( winSymbol===wild ) isExpand = true;
-    if( winSymbol>8 ) winSymbol = Math.floor( Math.random()*6 )+3;
+    if( winSymbol>8 ) {
+        isExpand = true;
+        winSymbol = Math.floor( isaac.random()*6 )+3;
+    }
 
     for( let i=0; i<maxCnt; i++ ) {
         for( let j=0; j<5; j++ ) {
@@ -390,11 +401,19 @@ export const generateBonusSpins = ( winSymbol:number, stake:number ) => {
             reels[0][ firstPos ] = winSymbol;
             expSubReels[0][ firstPos ] = winSymbol;
         }
+
         const line = selectPayLine( reels[0].indexOf( winSymbol ) );
         const sameCnt = getFloorRandom( 3 )+3;
         for( let k=0; k<sameCnt; k++ ) {
             reels[ k ][ Constants.SLOTPAYLINES[line][k] ] = winSymbol;
             expSubReels[ k ][ Constants.SLOTPAYLINES[line][k] ] = winSymbol;
+        }
+
+        if( isExpand ) {
+            const col = getFloorRandom( 5 );
+            const idx = getFloorRandom( 3 );
+            reels[ col ][ idx ] = 12;
+            expSubReels[ col ][ idx ] = 12;
         }
 
         // reels = fsReels[ rid ];
@@ -715,7 +734,7 @@ export const generateCurrentGameResponse = ( params:any ) => {
                 }
             ],
             "symbolPayouts": [{
-                "id": "PURPLE_GEM",
+                "id": Constants.SYMBOLDICT[100],
                 "payouts": [{
                         "symbols": 3,
                         "multiplier": 0.5
@@ -2273,7 +2292,7 @@ export const generateCurrentGameResponse = ( params:any ) => {
                 }
             ],
             "payouts": [{
-                    "id": "BLUE_GEM",
+                    "id": Constants.SYMBOLDICT[ 3 ], // BLUE_GEM
                     "payouts": [{
                             "symbols": 3,
                             "multiplier": 5
@@ -2289,7 +2308,7 @@ export const generateCurrentGameResponse = ( params:any ) => {
                     ]
                 },
                 {
-                    "id": "GREEN_GEM",
+                    "id": Constants.SYMBOLDICT[ 5 ], // GREEN_GEM
                     "payouts": [{
                             "symbols": 3,
                             "multiplier": 8
@@ -2305,7 +2324,7 @@ export const generateCurrentGameResponse = ( params:any ) => {
                     ]
                 },
                 {
-                    "id": "YELLOW_GEM",
+                    "id": Constants.SYMBOLDICT[ 6 ], //YELLOW_GEM
                     "payouts": [{
                             "symbols": 3,
                             "multiplier": 10
@@ -2321,7 +2340,7 @@ export const generateCurrentGameResponse = ( params:any ) => {
                     ]
                 },
                 {
-                    "id": "BAR",
+                    "id": Constants.SYMBOLDICT[ 8 ], // BAR
                     "payouts": [{
                             "symbols": 3,
                             "multiplier": 50
@@ -2337,7 +2356,7 @@ export const generateCurrentGameResponse = ( params:any ) => {
                     ]
                 },
                 {
-                    "id": "ORANGE_GEM",
+                    "id": Constants.SYMBOLDICT[ 4 ], // ORANGE_GEM
                     "payouts": [{
                             "symbols": 3,
                             "multiplier": 7
@@ -2353,7 +2372,7 @@ export const generateCurrentGameResponse = ( params:any ) => {
                     ]
                 },
                 {
-                    "id": "SEVEN",
+                    "id": Constants.SYMBOLDICT[ 7 ], // SEVEN
                     "payouts": [{
                             "symbols": 3,
                             "multiplier": 25

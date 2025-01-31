@@ -214,14 +214,9 @@ export const blingoService = {
                 await Models.updateUserBalance( userInfo.token, userInfo.balance );
                 break;
             case "spin" :
-                winSymbol = 8;
-                bonusReelInfo = Functions.generateBonusSpins( winSymbol, userInfo.gameStatus.stake );
-                bonusProfit = bonusReelInfo.bonusProfit;
-
-            /*
                 sid++;
                 if( sid === 2 ) userInfo.gameStatus.respinIndexes.length = 0;
-                if( userInfo.gameStatus.spinsRemaining === 0 ) {
+                if( userInfo.gameStatus.spinsRemaining===0 ) {
                     if( !userInfo.gameStatus.isPurchase && userInfo.gameStatus.purCount === -1 ) userInfo.gameStatus.isPurchase = true;
                     userInfo.gameStatus.purCount++;
                     if( userInfo.gameStatus.purCount===1 ) userInfo.gameStatus.fspSpinsRemaining = 0;
@@ -260,7 +255,6 @@ export const blingoService = {
                     await Models.updateUserBalance( userInfo.token, userInfo.balance )
                 }
                 if( userInfo.gameStatus.spinsRemaining > 0 ) userInfo.gameStatus.spinsRemaining--;
-            */
                 break;
             case "chooseCell" :
                 userInfo.gameStatus.chooseTime--;
