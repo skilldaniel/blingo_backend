@@ -216,6 +216,7 @@ export const blingoService = {
             case "spin" :
                 sid++;
                 if( sid === 2 ) userInfo.gameStatus.respinIndexes.length = 0;
+                console.log(`spinsRemaining=${userInfo.gameStatus.spinsRemaining}`);
                 if( userInfo.gameStatus.spinsRemaining===0 ) {
                     if( !userInfo.gameStatus.isPurchase && userInfo.gameStatus.purCount === -1 ) userInfo.gameStatus.isPurchase = true;
                     userInfo.gameStatus.purCount++;
@@ -323,7 +324,7 @@ export const blingoService = {
                     actionFlag = 3;
                     userInfo.gameStatus.totalWin = Math.round( userInfo.gameStatus.totalWin*100+bonusProfit*100 )/100;
                 };
-                if( userInfo.gameStatus.matchedPatterns.length<=2 ) {
+                if( userInfo.gameStatus.matchPatterns.length<=2 ) {
                     actionFlag = 0;
                 }
 

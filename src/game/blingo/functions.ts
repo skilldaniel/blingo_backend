@@ -587,7 +587,7 @@ export const generateCollectResponse = ( params:any ) => {
             "gameInstanceId": 94674817,
             "currencyCode": params.currency,
             "state": "COMPLETE",
-            "action": "NONE",
+            "action": "SPIN", // NONE
             "stake": gameInfo.stake,
             "totalStake": gameInfo.totalStake,
             "spinsRemaining": gameInfo.spinsRemaining,
