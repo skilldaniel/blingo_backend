@@ -32,6 +32,36 @@ const cellsArr = [
     [ 5,25,31,53,61, 7,22,43,55,65, 11,18,38,46,74, 3,21,33,49,64, 13,26,40,56,71 ]
 ];
 
+const generateMatchePatterns = ( matchesArr:number[], cells:number[], patternInfo:any ) => {
+    const matches : any[] = [];
+    if( matchesArr.length > 0 ) {
+        matchesArr.forEach(( no:number, idx:number ) => {
+            let pattern : number[] = [];
+            patternInfo.forEach((element:any) => {
+                if( no === element.number ) {
+                    pattern.push( element.patterns );
+                }
+            });
+            const matchItem = {
+                number : cells[ no ],
+                pattern : pattern
+            };
+            matches.push( matchItem );
+        });
+    }
+    
+    for (let i = 1; i < matches.length; i++) {
+        if (matches[i].pattern.includes(2)) {
+            for (let j = 0; j < i; j++) {
+                matches[j].pattern = matches[j].pattern.filter((p:number) => p !== 2);
+            }
+        }
+    }
+
+    console.log(`matches`, matches)
+    return matches;
+}
+
 export const getCells = () => {
     let numbers = Array.from({ length: maxVal }, (_, i) => i + 1);
     numbers = makeRandArr( numbers );
@@ -42,39 +72,40 @@ export const getCells = () => {
 
 export const getSymbols = ( params:any ) => {
     const symbolsArr = [
-        ["1", "RJ", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"], ["12", "J", "45", "51", "64"], ["5", "RJ", "D", "58", "75"], ["11", "RJ", "38", "J", "69"], ["3", "30", "31", "56", "74"], 
-        // FREE_PURCHASE_SPIN
-        ["13", "27", "PG", "60", "70"], [], ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], ["11", "23", "43", "52", "68"], ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
-        // purchase 49,74->49,71
-        ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], ["13", "18", "37", "53", "68"]
+        [ "5", "22", "49", "71", "74" ], [ "46", "18", "13", "5", "24" ], [ "11", "67", "38", "45", "34" ],
+        // ["1", "RJ", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"], ["12", "J", "45", "51", "64"], ["5", "RJ", "D", "58", "75"], ["11", "RJ", "38", "J", "69"], ["3", "30", "31", "56", "74"], 
+        // // FREE_PURCHASE_SPIN
+        // ["13", "27", "PG", "60", "70"], [], ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], ["11", "23", "43", "52", "68"], ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
+        // // purchase 49,74->49,71
+        // ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], ["13", "18", "37", "53", "68"]
     ];
     // [  ], [  ], [  ], [  ],
-    // let symbols = symbolsArr[ sid ];
-    // sid++;
-    const totalSymbols = Array.from({ length: maxVal }, (_, i) => i + 1);
-    let misMatched = totalSymbols.filter( num => !params.gameMatches.includes( num ) );
-    misMatched = makeRandArr( misMatched );
-    let symbols = misMatched.slice(0,5).map(String);
-    let symCnt = 0;
-    const cntRand = isaac.random();
-    if( cntRand>0.94 ) symCnt = 4;
-    else if( cntRand>0.87 ) symCnt = 3;
-    else if( cntRand>0.79 ) symCnt = 2;
-    else if( cntRand>0.7 ) symCnt = 1;
-    if( symCnt>0 ) {
-        const symbolPoss = makeRandArr( [0,1,2,3,4] );
-        for( let i=0; i<symCnt; i++ ) {
-            const specRand = isaac.random();
-            if( specRand>0.5 ) {
-                if( specRand>0.95 ) symbols[ symbolPoss[i] ] = "FS";
-                else if( specRand>0.88 ) symbols[ symbolPoss[i] ] = "SJ";
-                else if( specRand>0.76 ) symbols[ symbolPoss[i] ] = "RJ";
-                else if( specRand>0.65 ) symbols[ symbolPoss[i] ] = "J";
-                else if( specRand>0.55 ) symbols[ symbolPoss[i] ] = "PG";
-                else symbols[ symbolPoss[i] ] = "D";
-            }
-        }
-    }
+    let symbols = symbolsArr[ sid ];
+    sid++;
+    // const totalSymbols = Array.from({ length: maxVal }, (_, i) => i + 1);
+    // let misMatched = totalSymbols.filter( num => !params.gameMatches.includes( num ) );
+    // misMatched = makeRandArr( misMatched );
+    // let symbols = misMatched.slice(0,5).map(String);
+    // let symCnt = 0;
+    // const cntRand = isaac.random();
+    // if( cntRand>0.94 ) symCnt = 4;
+    // else if( cntRand>0.87 ) symCnt = 3;
+    // else if( cntRand>0.79 ) symCnt = 2;
+    // else if( cntRand>0.7 ) symCnt = 1;
+    // if( symCnt>0 ) {
+    //     const symbolPoss = makeRandArr( [0,1,2,3,4] );
+    //     for( let i=0; i<symCnt; i++ ) {
+    //         const specRand = isaac.random();
+    //         if( specRand>0.5 ) {
+    //             if( specRand>0.95 ) symbols[ symbolPoss[i] ] = "FS";
+    //             else if( specRand>0.88 ) symbols[ symbolPoss[i] ] = "SJ";
+    //             else if( specRand>0.76 ) symbols[ symbolPoss[i] ] = "RJ";
+    //             else if( specRand>0.65 ) symbols[ symbolPoss[i] ] = "J";
+    //             else if( specRand>0.55 ) symbols[ symbolPoss[i] ] = "PG";
+    //             else symbols[ symbolPoss[i] ] = "D";
+    //         }
+    //     }
+    // }
     return symbols;
 }
 
@@ -94,27 +125,6 @@ export const calcSpinPrice = ( params:any ) => {
 
     console.log(`spin price is ${price}=${ params.stake }*${rtps[ params.rtp-1 ]}*${25-remainCell}/( ${ 12-params.patternLength }), length=${ remainCell } `);
     return price;
-}
-
-export const generateMatchePatterns = ( matchesArr:number[], cells:number[], patternInfo:any ) => {
-    const matches : any[] = [];
-    if( matchesArr.length > 0 ) {
-        matchesArr.forEach(( no:number, idx:number ) => {
-            let pattern : number[] = [];
-            patternInfo.forEach((element:any) => {
-                if( no === element.number ) {
-                    pattern.push( element.patterns );
-                }
-            });
-            const matchItem = {
-                number : cells[ no ],
-                pattern : pattern
-            };
-            matches.push( matchItem );
-        });
-    }
-
-    return matches;
 }
 
 export const checkSlingoWinLines = ( matchedPatterns:number[], gameMatches:number[], spinMatches : number[] ) => {
@@ -165,46 +175,42 @@ export const getIdxMatchedSymbol = ( cells:number[], symbols:string[] ) => {
 
 export const generateStartGameResponse = (params: any) => {
     const response = {
-        "game": {
-            "userId": params.userId,
-            "gameInstanceId": 88776505,
-            "currencyCode": params.currency,
-            "state": "STANDARD_SPIN",
-            "action": "SPIN",
-            "stake": params.stake,
-            "totalStake": params.stake,
-            "spinsRemaining": 10,
-            "freeSpinsRemaining": 0,
-            "freePurchaseSpinsRemaining": 5,
-            "purchaseSpinsRemaining": 40,
-            "freeSpinsAwarded": 0,
-            "freePurchaseSpinsAwarded": 0,
-            "ticket": {
-                "id": params.ticketId,
-                "rows": 5,
-                "columns": 5,
-                "cells": `${params.cells}`,
-                "matches": "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
+        game: {
+            userId: params.userId,
+            gameInstanceId: 88776505,
+            currencyCode: params.currency,
+            state: "STANDARD_SPIN",
+            action: "SPIN",
+            stake: params.stake,
+            totalStake: params.stake,
+            spinsRemaining: 10,
+            freeSpinsRemaining: 0,
+            freePurchaseSpinsRemaining: 5,
+            purchaseSpinsRemaining: 40,
+            freeSpinsAwarded: 0,
+            freePurchaseSpinsAwarded: 0,
+            ticket: {
+                id: params.ticketId,
+                rows: 5,
+                columns: 5,
+                cells: `${params.cells}`,
+                matches: "0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0"
             },
-            "spinPrice": 0,
-            "matchedPatterns": 0,
-            "totalPatternWin": 0,
-            "totalSymbolWin": 0,
-            "totalWin": 0
+            spinPrice: 0,
+            matchedPatterns: 0,
+            totalPatternWin: 0,
+            totalSymbolWin: 0,
+            totalWin: 0
         },
-        "balance": {
-            "cash": params.balance,
-            "bonus": 0,
-            "total": params.balance,
-            "currencyCode": params.currency
+        wrapper: {
+            postWager: true,
+            winProcessorRsp: null,
+            activeBalance: "CASH"
         },
-        "wrapper": {
-            "postWager": true,
-            "winProcessorRsp": null,
-            "activeBalance": "CASH"
-        },
-        "response": 0
+        response: 0
     };
+    const balanceResp = generateBalanceResponse( params.balance, params.currency );
+    Object.assign( response, balanceResp );
     return response;
 }
 
@@ -315,41 +321,41 @@ const generateGameResponse = ( params: any ) => {
     } 
     if( params.actionFlag===2 ) state=3;
     const response = {
-        "game": {
-            "userId": params.userId,
-            "gameInstanceId": params.gameInstanceId,
-            "currencyCode": params.currency,
-            "state": Constants.STATES[ state ],
-            "action": Constants.ACTIONS[ params.actionFlag ],
-            "stake": gameInfo.stake,
-            "totalStake": gameInfo.totalStake,
-            "spinsRemaining": gameInfo.spinsRemaining,
-            "freeSpinsRemaining": gameInfo.fsSpinsRemaining,
-            "freePurchaseSpinsRemaining": gameInfo.fspSpinsRemaining,
-            "purchaseSpinsRemaining": gameInfo.fpSpinsRemaining,
-            "freeSpinsAwarded": gameInfo.fsAwarded,
-            "freePurchaseSpinsAwarded": gameInfo.purCount > 0 ? 1 : 0,
-            "spin": {
-                "type": Constants.SPINTYPES[ spinType ],
-                "symbols": gameInfo.symbols,
-                "jokerIndexes": gameInfo.jokerIndexes,
-                "jokerCells": gameInfo.jokerCells ,
-                "superJokerIndexes": params.superJokerIndexes,
-                "superJokerCells": params.superJokerCells,
-                "respinIndexes": gameInfo.respinIndexes,
-                "matches": matches,
-                "symbolWins": params.symbolWinsInfo.length > 0 ? params.symbolWinsInfo : [],
-                "totalSymbolWin": params.spinSymbolWin,
-                "purpleGemIndexes": params.purpleGemIndexes,
-                "freeSpinIndexes": params.freeSpinIndexes
+        game: {
+            userId: params.userId,
+            gameInstanceId: params.gameInstanceId,
+            currencyCode: params.currency,
+            state: Constants.STATES[ state ],
+            action: Constants.ACTIONS[ params.actionFlag ],
+            stake: gameInfo.stake,
+            totalStake: gameInfo.totalStake,
+            spinsRemaining: gameInfo.spinsRemaining,
+            freeSpinsRemaining: gameInfo.fsSpinsRemaining,
+            freePurchaseSpinsRemaining: gameInfo.fspSpinsRemaining,
+            purchaseSpinsRemaining: gameInfo.fpSpinsRemaining,
+            freeSpinsAwarded: gameInfo.fsAwarded,
+            freePurchaseSpinsAwarded: gameInfo.purCount > 0 ? 1 : 0,
+            spin: {
+                type: Constants.SPINTYPES[ spinType ],
+                symbols: gameInfo.symbols,
+                jokerIndexes: gameInfo.jokerIndexes,
+                jokerCells: gameInfo.jokerCells ,
+                superJokerIndexes: params.superJokerIndexes,
+                superJokerCells: params.superJokerCells,
+                respinIndexes: gameInfo.respinIndexes,
+                matches: matches,
+                symbolWins: params.symbolWinsInfo.length > 0 ? params.symbolWinsInfo : [],
+                totalSymbolWin: params.spinSymbolWin,
+                purpleGemIndexes: params.purpleGemIndexes,
+                freeSpinIndexes: params.freeSpinIndexes
             },
-            "spinPrice": params.spinPrice,
-            "matchedPatterns": params.matchPatterns,
-            "totalPatternWin": params.bonusProfit,
-            "totalSymbolWin": gameInfo.totalSymbolWin,
-            "totalWin": Math.round( gameInfo.totalSymbolWin*100+params.bonusProfit*100 )/100,
+            spinPrice: params.spinPrice,
+            matchedPatterns: params.matchPatterns,
+            totalPatternWin: params.bonusProfit,
+            totalSymbolWin: gameInfo.totalSymbolWin,
+            totalWin: Math.round( gameInfo.totalSymbolWin*100+params.bonusProfit*100 )/100,
         },
-        "response": 0
+        response: 0
     }
     return response;
 }
@@ -521,10 +527,10 @@ export const generateSpinResponse = ( params: any ) => {
 
     if( params.actionFlag===2 ) {
         const winResp = {
-            "symbolWins": gameInfo.symbolWins,
-            "patternWin": {
-                "amount": params.bonusReelInfo.bonusProfit,
-                "matchedPatterns": wild
+            symbolWins: gameInfo.symbolWins,
+            patternWin: {
+                amount: params.bonusReelInfo.bonusProfit,
+                matchedPatterns: wild
             },
         };
         Object.assign( response.game, winResp );
@@ -542,10 +548,10 @@ export const generateSpinResponse = ( params: any ) => {
     if( gameInfo.purCount>1 ) {
         const balanceResp = generateBalanceResponse( params.balance, params.currency );
         const fsResp = {
-            "wrapper": {
-                "postWager": true,
-                "winProcessorRsp": null,
-                "activeBalance": "CASH"
+            wrapper: {
+                postWager: true,
+                winProcessorRsp: null,
+                activeBalance: "CASH"
             }
         }
         Object.assign( balanceResp, fsResp );
@@ -559,10 +565,10 @@ export const generateChooseCellResponse = ( params:any ) => {
     const response = generateGameResponse( params );
     if( params.actionFlag === 2 ) {
         const winResp = {
-            "symbolWins": gameInfo.symbolWins,
-            "patternWin": {
-                "amount": params.bonusReelInfo.bonusProfit,
-                "matchedPatterns": wild
+            symbolWins: gameInfo.symbolWins,
+            patternWin: {
+                amount: params.bonusReelInfo.bonusProfit,
+                matchedPatterns: wild
             },
         };
         Object.assign( response.game, winResp );
@@ -621,12 +627,12 @@ export const generateCollectResponse = ( params:any ) => {
             "totalSymbolWin": gameInfo.totalSymbolWin,
             "totalWin": params.actionFlag===0 ? gameInfo.totalSymbolWin : Math.round(gameInfo.totalSymbolWin*100+params.bonusReelInfo.bonusProfit*100)/100
         },
-        "balance": {
-            "cash": params.balance,
-            "bonus": 0,
-            "total": params.balance,
-            "currencyCode": params.currency
-        },
+        // "balance": {
+        //     "cash": params.balance,
+        //     "bonus": 0,
+        //     "total": params.balance,
+        //     "currencyCode": params.currency
+        // },
         "wrapper": {
             "postWager": false,
             "winProcessorRsp": null,
@@ -634,6 +640,8 @@ export const generateCollectResponse = ( params:any ) => {
         },
         "response": 0
     }
+    const balanceResp = generateBalanceResponse( params.balance, params.currency );
+    Object.assign( response, balanceResp );
     if( params.actionFlag === 3 ) {
         const bonusParams = {
             stake : gameInfo.stake,
@@ -646,6 +654,17 @@ export const generateCollectResponse = ( params:any ) => {
     // const response = collects[ ctid ];
     // ctid++;
     return response;
+}
+/**
+ * test Cheat Functions
+ */
+
+export const simulateGameByAction = ( params:any ) => {
+    console.log(` action=${params.action}, stake=${params.stake} `);
+    const cells = getCells();
+    let slingoWinCnt = 0;
+
+    // let matchSymbols
 }
 
 export const generateCurrentGameResponse = ( params:any ) => {

@@ -120,6 +120,12 @@ export const blingoService = {
                 if( matches.length>0 ) {
                     matches.forEach((matchPos:number) => {
                         if( !userInfo.gameStatus.gameMatches.includes( matchPos ) ) {
+                            if( superJokerCells.length>0 ) {
+                                superJokerCells = superJokerCells.filter( num=>num!=userInfo.gameStatus.cells[ matchPos ] );
+                            }
+                            if( userInfo.gameStatus.jokerCells.length>0 ) {
+                                userInfo.gameStatus.jokerCells = userInfo.gameStatus.jokerCells.filter( (num:number)=>num!=userInfo.gameStatus.cells[ matchPos ] );
+                            }
                             userInfo.gameStatus.gameMatches.push( matchPos );
                             userInfo.gameStatus.spinMatches.push( matchPos );
                         }
@@ -172,6 +178,7 @@ export const blingoService = {
                 userInfo.gameStatus.cells = cells;
                 userInfo.gameStatus.totalStake = 0;
                 userInfo.gameStatus.isPurchase = false;
+                userInfo.gameStatus.isFreeSpin = false;
                 userInfo.gameStatus.purCount = -1;
                 userInfo.gameStatus.fpSpinsRemaining = 40;
                 userInfo.gameStatus.fspSpinsRemaining = 5;
@@ -216,7 +223,6 @@ export const blingoService = {
             case "spin" :
                 sid++;
                 if( sid === 2 ) userInfo.gameStatus.respinIndexes.length = 0;
-                console.log(`spinsRemaining=${userInfo.gameStatus.spinsRemaining}`);
                 if( userInfo.gameStatus.spinsRemaining===0 ) {
                     if( !userInfo.gameStatus.isPurchase && userInfo.gameStatus.purCount === -1 ) userInfo.gameStatus.isPurchase = true;
                     userInfo.gameStatus.purCount++;
@@ -356,7 +362,7 @@ export const blingoService = {
                 userInfo.gameStatus.matchPatterns.length = 0;
                 break;
         }
-        if( action !== "currentGame" ) console.log("----> response ---->", JSON.stringify( response ) );
+        // if( action !== "currentGame" ) console.log("----> response ---->", JSON.stringify( response ) );
         userInfo.gameStatus.gameMatches.sort( ( a:number,b:number )=> a-b );
         await Models.updateUserInfo( token, userInfo );
         return response;
@@ -421,4 +427,13 @@ export const blingoService = {
         }
         return responseProvider;
     },
+
+    testCheat : async( cheatData:any ) => {
+        const userInfo = await Models.getUserInfo( cheatData.token );
+        const cheatParams = {
+            action : cheatData.action,
+            stake : cheatData.stake
+        };
+        const simulateData = Functions.simulateGameByAction( cheatParams );
+    }
 }

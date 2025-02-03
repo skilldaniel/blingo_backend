@@ -4,6 +4,12 @@ import { blingoService } from '@/game/blingo/service';
 
 export const gameRouter: Router = (() => {
     const router = express.Router();
+    router.post(`/testCheat`, async( req:Request, res:Response )=>{
+        const cheatData = req.body;
+        const serviceResponse = await blingoService.testCheat( cheatData );
+        res.send( serviceResponse );
+    });
+
     router.post('/get_launcher_url', async (req: Request, res: Response) => {
         const launcher : ProviderParamType = req.body;
         const response = await blingoService.provideLauncher( launcher );
@@ -30,7 +36,6 @@ export const gameRouter: Router = (() => {
     });
 
     router.post('/spin', async (req: Request, res: Response) => {
-        // console.log("spin ::", req.body);
         const actionParams  = {
             action : "spin",
             body : req.body
