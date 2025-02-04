@@ -11,8 +11,7 @@ export const blingoService = {
         if(userInfo === null) return Constants.ERRORDESCRIPTION[ 6 ];
         const action = actionParams.action;
         console.log(`-----------------> action :: ${ action } ---------------------->`);
-        const cells : number[] = action === "currentGame" ? Functions.getCells() : [];
-        let symbols : string[] = [];
+        let symbols : any[] = [];
         let winSymbol = 0;
         let actionFlag = 0; // 0::SPIN, 1::CHOOSE_CELL, 2 :: NONE
         let totalSymbolWin = 0, chosenCellIdx = -1, bonusProfit = 0;;
@@ -40,11 +39,20 @@ export const blingoService = {
                 userInfo.gameStatus.gameMatches.forEach(( num:number ) => {
                     gameMatches.push( userInfo.gameStatus.cells[num] );
                 })
-                const symParam: any = {
-                    cells : userInfo.gameStatus.cells,
-                    gameMatches : gameMatches
-                };
-                symbols = Functions.getSymbols( symParam );
+                if( userInfo.cheat.isCheat ) {
+                    if( userInfo.cheat.cid>=userInfo.cheat.symbols.length ) {
+                        symbols = Functions.getEmptySymbols( userInfo.gameStatus.cells );
+                    } else {
+                        symbols = userInfo.cheat.symbols[ userInfo.cheat.cid ];
+                        userInfo.cheat.cid++;
+                    }
+                } else {
+                    const symParam: any = {
+                        cells : userInfo.gameStatus.cells,
+                        gameMatches : gameMatches
+                    };
+                    symbols = Functions.getSymbols( symParam );
+                }
                 symbols.forEach(( symbol:string, idx:number) => {
                     if( symbol === "RJ" || symbol === "J" ) {
                         for( let i = 0; i<5; i++ ) {
@@ -147,7 +155,7 @@ export const blingoService = {
                 }
             }
 
-            if( userInfo.gameStatus.purCount >= 0 ) {
+            if( userInfo.gameStatus.purCount >= 1 ) { // 0
                 const priceParams: any = {
                     rtp : 1,
                     stake : userInfo.gameStatus.stake,
@@ -172,10 +180,18 @@ export const blingoService = {
             userInfo.balance = Math.round( userInfo.balance*100+userInfo.gameStatus.totalSymbolWin*100+bonusProfit*100 )/100;
             userInfo.gameStatus.chooseTime=-1;
             userInfo.gameStatus.isChoose=false;
+            if( userInfo.cheat.isCheat ) {
+                console.log(`case1 isCheat=${userInfo.cheat.isCheat}`);
+                userInfo.cheat.isCheat = false;
+                userInfo.cheat.cid = 0;
+                userInfo.cheat.cells.length = 0;
+                userInfo.cheat.symbols.length = 0;
+            }
         }
         switch ( action ) {
             case "currentGame" :
-                userInfo.gameStatus.cells = cells;
+                const cellInfo = Functions.getCells();
+                userInfo.gameStatus.cells = cellInfo.cells;
                 userInfo.gameStatus.totalStake = 0;
                 userInfo.gameStatus.isPurchase = false;
                 userInfo.gameStatus.isFreeSpin = false;
@@ -227,7 +243,19 @@ export const blingoService = {
                     if( !userInfo.gameStatus.isPurchase && userInfo.gameStatus.purCount === -1 ) userInfo.gameStatus.isPurchase = true;
                     userInfo.gameStatus.purCount++;
                     if( userInfo.gameStatus.purCount===1 ) userInfo.gameStatus.fspSpinsRemaining = 0;
-                    else if( userInfo.gameStatus.purCount>1 ) userInfo.gameStatus.fpSpinsRemaining--;
+                    else if( userInfo.gameStatus.purCount>1 && !userInfo.gameStatus.isExtra ) userInfo.gameStatus.fpSpinsRemaining--;
+                }
+                console.log(`--> spinsRemaining=${userInfo.gameStatus.spinsRemaining}, purCount=${userInfo.gameStatus.purCount}`)
+
+                if( userInfo.gameStatus.purCount===1 || userInfo.gameStatus.isExtra ) {
+                    const hasCommon = symbols.some( num => userInfo.gameStatus.cells.includes(num) );
+                    console.log(`hasCommon=${hasCommon}`)
+                    if( !hasCommon ) {
+                        userInfo.gameStatus.symbols.length = 0;
+                        userInfo.gameStatus.isExtra = false;
+                    } else {
+                        userInfo.gameStatus.isExtra = true;
+                    }
                 }
                 const spinParams = {
                     actionFlag  : actionFlag,
@@ -360,6 +388,13 @@ export const blingoService = {
                 userInfo.gameStatus.symbolWins.length = 0;
                 userInfo.gameStatus.gameMatches.length = 0;
                 userInfo.gameStatus.matchPatterns.length = 0;
+                if( userInfo.cheat.isCheat ) {
+                    console.log(`case2 isCheat=${userInfo.cheat.isCheat}`);
+                    userInfo.cheat.isCheat = false;
+                    userInfo.cheat.cid = 0;
+                    userInfo.cheat.cells.length = 0;
+                    userInfo.cheat.symbols.length = 0;
+                }
                 break;
         }
         // if( action !== "currentGame" ) console.log("----> response ---->", JSON.stringify( response ) );
@@ -399,9 +434,9 @@ export const blingoService = {
             const gameCode = gameStr[0];
             
             // userInfo["token"] = Functions.generateFunToken();
-            userInfo["token"] = "fun@yyfexssupw1m3pohr1h" ;
-            userInfo["balance"] = 10000;
-            userInfo["property"] = {
+            userInfo.token = "fun@yyfexssupw1m3pohr1h" ;
+            userInfo.balance = 10000;
+            userInfo.property = {
                 rtp : rtp,
                 game : gameCode,
                 lang : launcher.lang,
@@ -413,16 +448,16 @@ export const blingoService = {
 
             await Models.addUser( userInfo );
             responseProvider = {
-                "error": 0,
-                "description": "Success",
-                "result": {
-                    "url": `http://${ process.env.HOST }:${ process.env.PORT }/blingo?gameId=slingo-starburst&gameMode=DEMO`
+                error: 0,
+                description: "Success",
+                result: {
+                    url: `http://${ process.env.HOST }:${ process.env.PORT }/blingo?gameId=slingo-starburst&gameMode=DEMO`
                 }
             }
         } else {
             responseProvider = {
-                "error" : 8,
-                "description" : Constants.ERRORDESCRIPTION[8]
+                error : 8,
+                description : Constants.ERRORDESCRIPTION[8]
             }
         }
         return responseProvider;
@@ -430,10 +465,23 @@ export const blingoService = {
 
     testCheat : async( cheatData:any ) => {
         const userInfo = await Models.getUserInfo( cheatData.token );
-        const cheatParams = {
-            action : cheatData.action,
-            stake : cheatData.stake
-        };
-        const simulateData = Functions.simulateGameByAction( cheatParams );
+        const actionList = [ "blingo3","blingo4","blingo5","blingo6","blingo7","blingo8","blingo9","blingo10","fullhouse" ];
+        let retVal = false;
+        if( actionList.includes(cheatData.action) ) {
+            const cheatParams = {
+                action : cheatData.action,
+                stake : cheatData.stake
+            };
+            const simulateData = Functions.simulateGameByAction( cheatParams );
+            userInfo.cheat.isCheat = true ;
+            userInfo.cheat.cid = 0;
+            userInfo.cheat.cells = simulateData.cells ;
+            userInfo.cheat.symbols = simulateData.cheatSymbols ;
+            const updateInfo = await Models.updateUserInfo( userInfo.token, userInfo );
+            retVal = updateInfo.matchedCount>0 && updateInfo.modifiedCount>0 ? true : false
+        }
+        return {
+            isCheat : retVal
+        }
     }
 }

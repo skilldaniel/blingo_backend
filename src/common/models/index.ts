@@ -20,7 +20,8 @@ export const connect = async (dbName : string) => {
 
 export const addUser = async( newUser:any ) => {
     await Users.deleteOne({ token : newUser.token }) ;
-    newUser["gameStatus"] = {
+
+    newUser.gameStatus = {
         stake   : 0.5,
         fsStake : 0,
         totalStake  : 0,
@@ -50,13 +51,21 @@ export const addUser = async( newUser:any ) => {
         jokerCells  : [] as number[],
         jokerIndexes    : [] as number[],
         respinIndexes   : [] as number[],
+
+        isExtra : false
     };
-    
+    newUser.cheat = {
+        isCheat : false,
+        cid: 0,
+        cells : [] as number[],
+        symbols : [] as number[][],
+
+    }
     await Users.insertOne( newUser );
 }
 
 export const updateUserInfo = async( token:string, userInfo:any ) => {
-    await Users.updateOne(
+    const result = await Users.updateOne(
         { token: token },
         {
             $set : {
@@ -92,10 +101,18 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                     jokerCells  : userInfo.gameStatus.jokerCells,
                     jokerIndexes    : userInfo.gameStatus.jokerIndexes,
                     respinIndexes   : userInfo.gameStatus.respinIndexes,
+                },
+                cheat : {
+                    isCheat : userInfo.cheat.isCheat,
+                    cid : userInfo.cheat.cid,
+                    cells : userInfo.cheat.cells,
+                    symbols : userInfo.cheat.symbols
                 }
             }
         }
-    )
+    );
+    return result;
+
 }
 
 export const getUserInfo = async( token:string ) => {

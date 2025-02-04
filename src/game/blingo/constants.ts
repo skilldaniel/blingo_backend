@@ -40,22 +40,22 @@ export const PAYTABLE : { [ key:number ] : number[] } = {
 };
 
 export const SYMBOLDICT : { [ key:number ] : string } = {
-    3 : "FAN",
-    4 : "LOTUS",
-    5 : "BAR",
-    6 : "YINYANG",
-    7 : "PIG",
-    8 : "EIGHT",
-    12 : "DRAGON",
-    100 : "PURPLE_GEM"
-    // 3 : "BLUE_GEM",
-    // 4 : "ORANGE_GEM",
-    // 5 : "GREEN_GEM",
-    // 6 : "YELLOW_GEM",
-    // 7 : "SEVEN",
-    // 8 : "BAR",
-    // 12 : "EXPANDING_WILD",
+    // 3 : "FAN",
+    // 4 : "LOTUS",
+    // 5 : "BAR",
+    // 6 : "YINYANG",
+    // 7 : "PIG",
+    // 8 : "EIGHT",
+    // 12 : "DRAGON",
     // 100 : "PURPLE_GEM"
+    3 : "BLUE_GEM",
+    4 : "ORANGE_GEM",
+    5 : "GREEN_GEM",
+    6 : "YELLOW_GEM",
+    7 : "SEVEN",
+    8 : "BAR",
+    12 : "EXPANDING_WILD",
+    100 : "PURPLE_GEM"
 };
 
 export const SLINGOWINLINES : { [ key:number ] : number[] } = {
