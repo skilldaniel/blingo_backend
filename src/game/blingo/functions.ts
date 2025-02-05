@@ -342,7 +342,6 @@ const generateGameResponse = ( params: any ) => {
         if( gameInfo.purCount===1 ) state=1, spinType=2 ;
         if( gameInfo.purCount > 1 ) state=2, spinType=3 ;
     } 
-    console.log(`purCount=${ gameInfo.purCount }, state=${state}, spinType=${spinType}`)
     if( params.actionFlag===2 ) state=3;
     const response = {
         game: {
@@ -400,7 +399,7 @@ const fsReels = [
     [ [ 12,6,12 ], [ 9,8,6 ], [ 7,7,5 ], [ 8,12,6 ], [ 3,12,5 ] ],
 ];
 
-export const generateBonusSpins = ( winSymbol:number, stake:number ) => {
+export const generateBonusSpins = ( params:any ) => {
     let reels : number[][] = [];
     let expSubReels: number[][] = [];
     const fullReels = [ 3,4,5,6,7,8 ];
@@ -410,9 +409,9 @@ export const generateBonusSpins = ( winSymbol:number, stake:number ) => {
     const reelMrx : typeof reels[] = [];
     const expReelMrx : typeof reels[] = [];
     let isExpand = false;
-    if( winSymbol>8 ) {
+    if( params.winSymbol>8 ) {
         isExpand = true;
-        winSymbol = Math.floor( isaac.random()*6 )+3;
+        params.winSymbol = Math.floor( isaac.random()*6 )+3;
     }
 
     for( let i=0; i<maxCnt; i++ ) {
@@ -426,17 +425,17 @@ export const generateBonusSpins = ( winSymbol:number, stake:number ) => {
             }
         }
 
-        if( !reels[0].includes( winSymbol ) ) {
+        if( !reels[0].includes( params.winSymbol ) ) {
             const firstPos = getFloorRandom( 3 );
-            reels[0][ firstPos ] = winSymbol;
-            expSubReels[0][ firstPos ] = winSymbol;
+            reels[0][ firstPos ] = params.winSymbol;
+            expSubReels[0][ firstPos ] = params.winSymbol;
         }
 
-        const line = selectPayLine( reels[0].indexOf( winSymbol ) );
+        const line = selectPayLine( reels[0].indexOf( params.winSymbol ) );
         const sameCnt = getFloorRandom( 3 )+3;
         for( let k=0; k<sameCnt; k++ ) {
-            reels[ k ][ GlobalConstants.SLOTPAYLINES[line][k] ] = winSymbol;
-            expSubReels[ k ][ GlobalConstants.SLOTPAYLINES[line][k] ] = winSymbol;
+            reels[ k ][ GlobalConstants.SLOTPAYLINES[line][k] ] = params.winSymbol;
+            expSubReels[ k ][ GlobalConstants.SLOTPAYLINES[line][k] ] = params.winSymbol;
         }
 
         if( isExpand ) {
@@ -462,7 +461,7 @@ export const generateBonusSpins = ( winSymbol:number, stake:number ) => {
             expReelMrx.push( expSubReels );
         }
     }
-    const payLineInfo = checkPayLines( isExpand ? expReelMrx : reelMrx, stake );
+    const payLineInfo = checkPayLines( isExpand ? expReelMrx : reelMrx, params.stake );
     return {
         reelMrx : reelMrx,
         payLineInfo : payLineInfo.payInfo,
@@ -612,51 +611,51 @@ export const generateChooseCellResponse = ( params:any ) => {
 export const generateCollectResponse = ( params:any ) => {
     const gameInfo = params.gameInfo;
     const response = {
-        "game": {
-            "userId": 26787348,
-            "gameInstanceId": 94674817,
-            "currencyCode": params.currency,
-            "state": "COMPLETE",
-            "action": "SPIN", // NONE
-            "stake": gameInfo.stake,
-            "totalStake": gameInfo.totalStake,
-            "spinsRemaining": gameInfo.spinsRemaining,
-            "freeSpinsRemaining": 0,
-            "freePurchaseSpinsRemaining": gameInfo.fspSpinsRemaining,
-            "purchaseSpinsRemaining": gameInfo.fpSpinsRemaining,
-            "freeSpinsAwarded": 0,
-            "freePurchaseSpinsAwarded": 1, // gameInfo.isFreeSpin ? 1 : 0,
-            "spin": {
-                "type": "FREE_PURCHASE",
-                "symbols": [],
-                "jokerIndexes": [],
-                "jokerCells": [],
-                "superJokerIndexes": [],
-                "superJokerCells": [],
-                "respinIndexes": [],
-                "matches": [],
-                "symbolWins": [],
-                "totalSymbolWin": 0,
-                "purpleGemIndexes": [],
-                "freeSpinIndexes": []
+        game: {
+            userId: 26787348,
+            gameInstanceId: 94674817,
+            currencyCode: params.currency,
+            state: "COMPLETE",
+            action: "SPIN", // NONE
+            stake: gameInfo.stake,
+            totalStake: gameInfo.totalStake,
+            spinsRemaining: gameInfo.spinsRemaining,
+            freeSpinsRemaining: 0,
+            freePurchaseSpinsRemaining: gameInfo.fspSpinsRemaining,
+            purchaseSpinsRemaining: gameInfo.fpSpinsRemaining,
+            freeSpinsAwarded: 0,
+            freePurchaseSpinsAwarded: 1, // gameInfo.isFreeSpin ? 1 : 0,
+            spin: {
+                type: "FREE_PURCHASE",
+                symbols: [],
+                jokerIndexes: [],
+                jokerCells: [],
+                superJokerIndexes: [],
+                superJokerCells: [],
+                respinIndexes: [],
+                matches: [],
+                symbolWins: [],
+                totalSymbolWin: 0,
+                purpleGemIndexes: [],
+                freeSpinIndexes: []
             },
-            "symbolWins": gameInfo.symbolWins,
-            "patternWin": {
-                "amount": params.bonusReelInfo.bonusProfit,
-                "matchedPatterns": gameInfo.matchPatterns.length
+            symbolWins: gameInfo.symbolWins,
+            patternWin: {
+                amount: params.bonusReelInfo.bonusProfit,
+                matchedPatterns: gameInfo.matchPatterns.length
             },
-            "spinPrice": params.spinPrice,
-            "matchedPatterns": gameInfo.matchPatterns.length,
-            "totalPatternWin": params.actionFlag===0 ? 0 : params.bonusReelInfo.bonusProfit,
-            "totalSymbolWin": gameInfo.totalSymbolWin,
-            "totalWin": params.actionFlag===0 ? gameInfo.totalSymbolWin : Math.round(gameInfo.totalSymbolWin*100+params.bonusReelInfo.bonusProfit*100)/100
+            spinPrice: params.spinPrice,
+            matchedPatterns: gameInfo.matchPatterns.length,
+            totalPatternWin: params.actionFlag===0 ? 0 : params.bonusReelInfo.bonusProfit,
+            totalSymbolWin: gameInfo.totalSymbolWin,
+            totalWin: params.actionFlag===0 ? gameInfo.totalSymbolWin : Math.round(gameInfo.totalSymbolWin*100+params.bonusReelInfo.bonusProfit*100)/100
         },
-        "wrapper": {
-            "postWager": false,
-            "winProcessorRsp": null,
-            "gameInstanceId": 94674817
+        wrapper: {
+            postWager: false,
+            winProcessorRsp: null,
+            gameInstanceId: 94674817
         },
-        "response": 0
+        response: 0
     }
     const balanceResp = generateBalanceResponse( params.balance, params.currency );
     Object.assign( response, balanceResp );
@@ -676,17 +675,31 @@ export const generateCollectResponse = ( params:any ) => {
 /**
  * test Cheat Functions
  */
+const checkOtherLines = ( matchedPos:number[], slingoWinCnt:number ) => {
+    let matchedCnt = 0;
+    for( const key in GlobalConstants.SLINGOWINLINES ) {
+        const line = GlobalConstants.SLINGOWINLINES[key];
+        line.forEach(pos=> {
+            if( matchedPos.includes(pos) ) matchedCnt++;
+        })
+        if( matchedCnt===5 ) matchedCnt++;
+    }
+    console.log(``)
+    if( matchedCnt===slingoWinCnt ) return true;
+    else return false;
+}
+
 export const simulateGameByAction = ( params:any ) => {
     console.log(` action=${params.action}, stake=${params.stake} `);
     const cellInfo = getCells();
     const cells = cellInfo.cells;
-    const matchedPos : number[] = [];
     const cheatSymbols : number[][] = [];
     const keys = [ 0,1,2,3,4,5,6,7,8,9,10,11 ];
     
-    let remainCells = cellInfo.remainCells;
-    let matchedCells : number[] = [];
     let slingoWinCnt = 0;
+    let matchedPos : number[] = [];
+    let matchedCells : number[] = [];
+    let remainCells = cellInfo.remainCells;
 
     switch (params.action) {
         case "blingo3":
@@ -717,17 +730,8 @@ export const simulateGameByAction = ( params:any ) => {
             slingoWinCnt = 12;
             break;
     }
-    const matchWinLines = makeRandArr( keys ).slice( 0, slingoWinCnt );
-    if( slingoWinCnt>=5 ) {
-        if( !matchWinLines.includes(10) && !matchWinLines.includes(11) ) {
-            console.log('matchWinLines1=', matchWinLines);
-            matchWinLines.pop();
-            matchWinLines.push( 10 );
-            console.log('matchWinLines2=', matchWinLines);
-        }
-    }
-    // const matchWinLines = [ 5, 4, 8 ];
-    console.log(`matchWinLines=`, matchWinLines)
+    // let matchWinLines = makeRandArr( keys ).slice( 0, slingoWinCnt );
+    let matchWinLines = [ 6, 9, 10, 3, 0 ];
     matchWinLines.forEach(( matchLine ) => {
         GlobalConstants.SLINGOWINLINES[ matchLine ].forEach( pos => {
             if( !matchedPos.includes( pos ) ) {
@@ -736,6 +740,22 @@ export const simulateGameByAction = ( params:any ) => {
             }
         })
     })
+    
+    if( slingoWinCnt>=5 ) {
+        const noLine = checkOtherLines( matchedPos, slingoWinCnt )
+        if( !noLine ) {
+
+        }
+        // console.log(`matchWinLines=`, matchWinLines );
+        // console.log(`matchedPos=`, matchedPos );
+        // if( !matchWinLines.includes(10) && !matchWinLines.includes(11) ) {
+        //     console.log('matchWinLines1=', matchWinLines);
+        //     matchWinLines.pop();
+        //     matchWinLines.push( 10 );
+        //     console.log('matchWinLines2=', matchWinLines);
+        // }
+    }
+
     const matchedTarget = matchedPos.length;
     let curMatchedSymbolCnt = 0;
     while( matchedTarget>curMatchedSymbolCnt ) {
