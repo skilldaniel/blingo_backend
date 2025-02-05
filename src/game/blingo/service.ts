@@ -67,17 +67,20 @@ export const blingoService = {
                     if( userInfo.gameStatus.purCount===1 ) userInfo.gameStatus.fspSpinsRemaining--;
                     else if( userInfo.gameStatus.purCount>1 && !userInfo.gameStatus.isExtra ) userInfo.gameStatus.fpSpinsRemaining--;
                 }
-                console.log(`--> spinsRemaining=${userInfo.gameStatus.spinsRemaining}, purCount=${userInfo.gameStatus.purCount}, fsStake=${userInfo.gameStatus.fsStake}`)
+                console.log(`-----> spinsRemaining=${userInfo.gameStatus.spinsRemaining}, purCount=${userInfo.gameStatus.purCount}, fsStake=${userInfo.gameStatus.fsStake}`);
+                if( userInfo.gameStatus.purCount===0 ) {
+                    console.log(`symbols=${userInfo.gameStatus.symbols}`);
+                }
                 if( userInfo.gameStatus.purCount===1 || userInfo.gameStatus.isExtra ) {
                     isExtra = userInfo.gameStatus.symbols.some( (num:any) => userInfo.gameStatus.cells.includes(num) );
-                    console.log(`isExtra=${isExtra}, symbols =`, userInfo.gameStatus.symbols );
                     if( !isExtra ) {
                         userInfo.gameStatus.symbols.length = 0;
                     } else {
                         userInfo.gameStatus.purCount=1;
                     }
+                    console.log(`isExtra=${isExtra}, ${userInfo.gameStatus.symbols.length} symbols =`, userInfo.gameStatus.symbols );
                 }
-
+                
                 userInfo.gameStatus.symbols.forEach(( symbol:string, idx:number) => {
                     if( symbol === "RJ" || symbol === "J" ) {
                         for( let i = 0; i<5; i++ ) {

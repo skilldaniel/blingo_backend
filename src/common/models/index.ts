@@ -101,6 +101,8 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                     jokerCells  : userInfo.gameStatus.jokerCells,
                     jokerIndexes    : userInfo.gameStatus.jokerIndexes,
                     respinIndexes   : userInfo.gameStatus.respinIndexes,
+
+                    isExtra : userInfo.gameStatus.isExtra
                 },
                 cheat : {
                     isCheat : userInfo.cheat.isCheat,
