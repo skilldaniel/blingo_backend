@@ -77,80 +77,8 @@ export const getCells = () => {
 export const getSymbols = ( params:any ) => {
     // /*
     const symbolsArr = [
-       [
-            "5",
-            "25",
-            "31",
-            "53",
-            "61"
-          ], [
-            "16",
-            "23",
-            "58",
-            "39",
-            "74"
-          ], [
-            "67",
-            "29",
-            "39",
-            "20",
-            "66"
-          ], [
-            "68",
-            "33",
-            "40",
-            "46",
-            "6"
-          ], [
-            "13",
-            "62",
-            "18",
-            "58",
-            "27"
-          ], [
-            "PG",
-            "22",
-            "39",
-            "9",
-            "75"
-          ], [
-            "24",
-            "31",
-            "32",
-            "RJ",
-            "56"
-          ], [
-            "68",
-            "1",
-            "12",
-            "64",
-            "48"
-          ], [
-            "37",
-            "19",
-            "24",
-            "35",
-            "34"
-          ], [
-            "PG",
-            "8",
-            "72",
-            "53",
-            "30"
-          ], [
-            "41",
-            "66",
-            "34",
-            "29",
-            "15"
-          ], [], [
-            "PG",
-            "8",
-            "72",
-            "53",
-            "30"
-          ]
-          
+        ["5", "22", "38", "0", "71"], ["5", "25", "31", "0", "61"],
+        ["0", "55", "46", "0", "56"], ["0", "0", "53", "49", "0"]
         // [ "5", "22", "49", "71", "74" ], [ "46", "18", "13", "5", "24" ], [ "11", "67", "38", "45", "34" ],
         // ["1", "RJ", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"], ["12", "J", "45", "51", "64"], ["5", "RJ", "D", "58", "75"], ["11", "RJ", "38", "J", "69"], ["3", "30", "31", "56", "74"], 
         // // FREE_PURCHASE_SPIN
@@ -310,6 +238,22 @@ export const generateStartGameResponse = (params: any) => {
     return response;
 }
 
+const removeRepatedPatterns = ( matches:any ) => {
+    console.log("matches=", matches);
+    const seen: number[] = [];
+    for( let i=matches.length-1; i>=0; i-- ) {
+        matches[i].pattern = matches[i].pattern.filter( (num:number) => {
+            if( seen.includes(num) ) {
+                return false;
+            }
+            seen.push( num );
+            return true;
+        })
+    }
+    console.log(`seen=${ seen }, removed matches`, matches);
+    return matches;
+}
+
 const selectPayLine = ( idx:number ) => {
     const lines : { [key:number] : number[] } = {
         0 : [ 1,3,5 ],
@@ -408,6 +352,11 @@ const generateTriggers = ( line:number, sameCnt:number ) => {
 const generateGameResponse = ( params: any ) => {
     const gameInfo = params.gameInfo;
     const matches = generateMatchePatterns( gameInfo.spinMatches, gameInfo.cells, params.patternInfo );
+    const hasPattern = matches.some(match => match.pattern.length > 0);
+    let removeMatches = removeRepatedPatterns( matches );
+    if( hasPattern ) {
+
+    }
     let state = 0, spinType = 0;
     if( gameInfo.purCount>0 ) {
         if( gameInfo.purCount===1 ) state=1, spinType=2 ;
@@ -437,7 +386,7 @@ const generateGameResponse = ( params: any ) => {
                 superJokerIndexes: params.superJokerIndexes,
                 superJokerCells: params.superJokerCells,
                 respinIndexes: gameInfo.respinIndexes,
-                matches: matches,
+                matches: hasPattern ? removeMatches : matches,
                 symbolWins: params.symbolWinsInfo.length > 0 ? params.symbolWinsInfo : [],
                 totalSymbolWin: params.spinSymbolWin,
                 purpleGemIndexes: params.purpleGemIndexes,
