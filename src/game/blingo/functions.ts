@@ -57,7 +57,6 @@ const generateMatchePatterns = ( matchesArr:number[], cells:number[], patternInf
         //     }
         // }
     }
-    
     // console.log(`matches`, matches)
     return matches;
 }
@@ -78,77 +77,67 @@ export const getCells = () => {
 export const getSymbols = ( params:any ) => {
     // /*
     const symbolsArr = [
-        [
-            "SJ",
+       [
+            "5",
             "25",
-            "75",
-            "7",
-            "35"
-          ],
-          [
+            "31",
+            "53",
+            "61"
+          ], [
             "16",
             "23",
             "58",
             "39",
             "74"
-          ],
-          [
+          ], [
             "67",
             "29",
             "39",
             "20",
             "66"
-          ],
-          [
+          ], [
             "68",
             "33",
             "40",
             "46",
             "6"
-          ],
-          [
+          ], [
             "13",
             "62",
             "18",
             "58",
             "27"
-          ],
-          [
+          ], [
             "PG",
             "22",
             "39",
             "9",
             "75"
-          ],
-          [
+          ], [
             "24",
             "31",
             "32",
             "RJ",
             "56"
-          ],
-          [
+          ], [
             "68",
             "1",
             "12",
             "64",
             "48"
-          ],
-          [
+          ], [
             "37",
             "19",
             "24",
             "35",
             "34"
-          ],
-          [
+          ], [
             "PG",
             "8",
             "72",
             "53",
             "30"
-          ],
-          [
+          ], [
             "41",
             "66",
             "34",
@@ -237,7 +226,7 @@ export const calcSpinPrice = ( params:any ) => {
 export const checkSlingoWinLines = ( matchedPatterns:number[], gameMatches:number[], spinMatches : number[] ) => {
     const patterns  : number[] = [];
     const patternInfo   : any[] = [];
-    if( gameMatches.length>5 ) {
+    if( gameMatches.length>=5 ) {
         let slingoWinLines: number[] = Object.keys( GlobalConstants.SLINGOWINLINES ).map(Number);
         if( matchedPatterns.length > 0 ) {
             slingoWinLines = slingoWinLines.filter(num=>!matchedPatterns.includes(Number(num)));
@@ -766,7 +755,6 @@ const checkOtherLines = ( matchedPos:number[], slingoWinCnt:number ) => {
         })
         if( matchedCnt===5 ) matchedCnt++;
     }
-    console.log(``)
     if( matchedCnt===slingoWinCnt ) return true;
     else return false;
 }

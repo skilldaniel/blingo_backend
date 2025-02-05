@@ -166,6 +166,7 @@ export const blingoService = {
                             userInfo.gameStatus.spinMatches.push( matchPos );
                         }
                     });
+
                 }
             }
             if( action==="chooseCell" ) {
@@ -175,8 +176,11 @@ export const blingoService = {
                     userInfo.gameStatus.spinMatches.push( chosenCellIdx );
                 }
             }
+            console.log(`spinMatches=[ ${userInfo.gameStatus.spinMatches} ], ${userInfo.gameStatus.spinMatches.length}`);
+
             if( userInfo.gameStatus.spinMatches.length>0 ) {
                 slingoWinInfo = Functions.checkSlingoWinLines( userInfo.gameStatus.matchPatterns, userInfo.gameStatus.gameMatches, userInfo.gameStatus.spinMatches );
+                console.log('visit here?');
                 if( slingoWinInfo.patterns.length>0 ) {
                     userInfo.gameStatus.matchPatterns = new Set([ ...userInfo.gameStatus.matchPatterns, ...slingoWinInfo.patterns ]) ;
                     userInfo.gameStatus.matchPatterns = Array.from( userInfo.gameStatus.matchPatterns );
