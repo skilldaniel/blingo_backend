@@ -127,7 +127,7 @@ export const blingoService = {
                 if( userInfo.gameStatus.spinsRemaining===0 ) {
                     if( !userInfo.gameStatus.isPurchase && userInfo.gameStatus.purCount === -1 ) userInfo.gameStatus.isPurchase = true;
                     userInfo.gameStatus.purCount++;
-                    if( userInfo.gameStatus.purCount===1 ) userInfo.gameStatus.fspSpinsRemaining = 0;
+                    if( userInfo.gameStatus.purCount===1 ) userInfo.gameStatus.fspSpinsRemaining--;
                     else if( userInfo.gameStatus.purCount>1 && !userInfo.gameStatus.isExtra ) userInfo.gameStatus.fpSpinsRemaining--;
                 }
 
@@ -293,6 +293,7 @@ export const blingoService = {
                         } else {
                             userInfo.gameStatus.totalStake = Math.round( userInfo.gameStatus.totalStake*100+userInfo.gameStatus.fsStake*100 ) / 100;
                             userInfo.balance = Math.round( userInfo.balance*100-userInfo.gameStatus.fsStake*100 )/100;
+                            totalProfit = Math.round( totalProfit*100 + userInfo.gameStatus.fsStake*100 ) / 100
                         }
                     }
                     await Models.updateUserBalance( userInfo.token, userInfo.balance )
