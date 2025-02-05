@@ -96,9 +96,10 @@ export const getSymbols = ( params:any ) => {
     let symbols = misMatched.slice(0,5).map(String);
     let symCnt = 0;
     const cntRand = isaac.random();
-    if( cntRand>0.94 ) symCnt = 4;
-    else if( cntRand>0.87 ) symCnt = 3;
-    else if( cntRand>0.79 ) symCnt = 2;
+    if( cntRand>0.99 ) symCnt = 5;
+    else if( cntRand>0.96 ) symCnt = 4;
+    else if( cntRand>0.91 ) symCnt = 3;
+    else if( cntRand>0.84 ) symCnt = 2;
     else if( cntRand>0.7 ) symCnt = 1;
     if( symCnt>0 ) {
         const symbolPoss = makeRandArr( [0,1,2,3,4] );
@@ -106,11 +107,17 @@ export const getSymbols = ( params:any ) => {
             const specRand = isaac.random();
             if( specRand>0.5 ) {
                 if( specRand>0.95 ) symbols[ symbolPoss[i] ] = "FS";
-                else if( specRand>0.88 ) symbols[ symbolPoss[i] ] = "SJ";
-                else if( specRand>0.76 ) symbols[ symbolPoss[i] ] = "RJ";
-                else if( specRand>0.65 ) symbols[ symbolPoss[i] ] = "J";
-                else if( specRand>0.55 ) symbols[ symbolPoss[i] ] = "PG";
+                else if( specRand>0.91 ) symbols[ symbolPoss[i] ] = "SJ";
+                else if( specRand>0.83 ) symbols[ symbolPoss[i] ] = "RJ";
+                else if( specRand>0.75 ) symbols[ symbolPoss[i] ] = "J";
+                else if( specRand>0.61 ) symbols[ symbolPoss[i] ] = "PG";
                 else symbols[ symbolPoss[i] ] = "D";
+            }
+        }
+        if( symbols.filter(symbol=>symbol==="SJ").length>1 ) {
+            for( let i=1; i<symbols.filter(symbol=>symbol==="SJ").length; i++ ) {
+                const sjInd = symbols.indexOf("SJ");
+                if( sjInd !== -1 ) symbols[ sjInd ] = `7`;
             }
         }
     }
@@ -135,7 +142,7 @@ export const checkRowCells = ( gameMatches:number[], row:number ) => {
 export const calcSpinPrice = ( params:any ) => {
     const rtps = [ 0.96, 0.94, 0.92 ];
     const remainCell = params.totalMatches.length;
-    const price = params.totalMatches.length===25 ? 0 : 
+    const price = params.totalMatches.length===25 ? 0.01 : 
                     params.patternLength===0 || params.patternLength===12 ? 0.01 : 
                         Math.round( 100*params.stake*rtps[params.rtp-1]*(maxVal-remainCell) / ((25-remainCell)*(12-params.patternLength)) )/100;
 
@@ -332,9 +339,10 @@ const generateGameResponse = ( params: any ) => {
     if( gameInfo.purCount===0 ) {
         state = 1;
     } else if( gameInfo.purCount>0 ) {
-        if( gameInfo.purCount===1 ) state=2, spinType=2 ;
+        if( gameInfo.purCount===1 ) state=1, spinType=2 ;
         if( gameInfo.purCount > 1 ) state=2, spinType=3 ;
     } 
+    console.log(`purCount=${ gameInfo.purCount }, state=${state}, spinType=${spinType}`)
     if( params.actionFlag===2 ) state=3;
     const response = {
         game: {

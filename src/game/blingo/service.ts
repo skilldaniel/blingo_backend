@@ -2,8 +2,8 @@ import * as Models from "@/common/models";
 import * as Types from "@/game/types";
 import * as Functions from "@/game/blingo/functions";
 import * as Constants from "@/game/blingo/constants";
-// actionFlag=2 : complete  
-let sid = 0;
+let totalStake = 0;
+let totalProfit = 0;
 export const blingoService = {
     handleAction : async ( actionParams:any ) => {
         const token = actionParams.body.token;
@@ -13,7 +13,7 @@ export const blingoService = {
         console.log(`-----------------> action :: ${ action } ---------------------->`);
         let symbols : any[] = [];
         let winSymbol = 0;
-        let actionFlag = 0; // 0::SPIN, 1::CHOOSE_CELL, 2 :: NONE
+        let actionFlag = 0; // 0::SPIN, 1::CHOOSE_CELL, 2::COMPLETE, 3::NONE
         let totalSymbolWin = 0, chosenCellIdx = -1, bonusProfit = 0;;
         let symbolWinsInfo : Types.SymbolWinsType[] = [];
         let purpleGemIndexes : number[] = [];
@@ -101,7 +101,7 @@ export const blingoService = {
                                 }
                                 break;
                             case "FS":
-                                userInfo.gameStatus.spinsRemaining += 5;
+                                userInfo.gameStatus.spinsRemaining += 1;
                                 userInfo.gameStatus.isFreeSpin = true;
                                 userInfo.gameStatus.fsSpinsRemaining = 1;
                                 userInfo.gameStatus.fsAwarded = 1;
@@ -123,6 +123,14 @@ export const blingoService = {
                     symbolWinsInfo.push( symbolWinItem );
                 }
                 userInfo.gameStatus.symbols = symbols;
+                
+                if( userInfo.gameStatus.spinsRemaining===0 ) {
+                    if( !userInfo.gameStatus.isPurchase && userInfo.gameStatus.purCount === -1 ) userInfo.gameStatus.isPurchase = true;
+                    userInfo.gameStatus.purCount++;
+                    if( userInfo.gameStatus.purCount===1 ) userInfo.gameStatus.fspSpinsRemaining = 0;
+                    else if( userInfo.gameStatus.purCount>1 && !userInfo.gameStatus.isExtra ) userInfo.gameStatus.fpSpinsRemaining--;
+                }
+
                 userInfo.gameStatus.spinMatches.length = 0;
                 matches = Functions.getIdxMatchedSymbol( userInfo.gameStatus.cells, symbols );
                 if( matches.length>0 ) {
@@ -154,7 +162,6 @@ export const blingoService = {
                     userInfo.gameStatus.matchPatterns = Array.from( userInfo.gameStatus.matchPatterns );
                 }
             }
-
             if( userInfo.gameStatus.purCount >= 1 ) { // 0
                 const priceParams: any = {
                     rtp : 1,
@@ -237,8 +244,6 @@ export const blingoService = {
                 await Models.updateUserBalance( userInfo.token, userInfo.balance );
                 break;
             case "spin" :
-                sid++;
-                if( sid === 2 ) userInfo.gameStatus.respinIndexes.length = 0;
                 if( userInfo.gameStatus.spinsRemaining===0 ) {
                     if( !userInfo.gameStatus.isPurchase && userInfo.gameStatus.purCount === -1 ) userInfo.gameStatus.isPurchase = true;
                     userInfo.gameStatus.purCount++;
@@ -246,15 +251,14 @@ export const blingoService = {
                     else if( userInfo.gameStatus.purCount>1 && !userInfo.gameStatus.isExtra ) userInfo.gameStatus.fpSpinsRemaining--;
                 }
                 console.log(`--> spinsRemaining=${userInfo.gameStatus.spinsRemaining}, purCount=${userInfo.gameStatus.purCount}`)
-
+                let isExtra = false;
                 if( userInfo.gameStatus.purCount===1 || userInfo.gameStatus.isExtra ) {
-                    const hasCommon = symbols.some( num => userInfo.gameStatus.cells.includes(num) );
-                    console.log(`hasCommon=${hasCommon}`)
-                    if( !hasCommon ) {
+                    isExtra = symbols.some( num => userInfo.gameStatus.cells.includes(num) );
+                    console.log(`isExtra=${isExtra}, symbols =`, symbols );
+                    if( !isExtra ) {
                         userInfo.gameStatus.symbols.length = 0;
-                        userInfo.gameStatus.isExtra = false;
                     } else {
-                        userInfo.gameStatus.isExtra = true;
+                        userInfo.gameStatus.purCount=1;
                     }
                 }
                 const spinParams = {
@@ -277,6 +281,10 @@ export const blingoService = {
                     matchPatterns   : userInfo.gameStatus.matchPatterns.length,
                 };
                 response = Functions.generateSpinResponse( spinParams );
+                
+                if( !isExtra ) userInfo.gameStatus.isExtra = false;
+                else userInfo.gameStatus.isExtra = true;
+
                 if( userInfo.gameStatus.purCount>=1 ) {
                     if( actionFlag === 0 ) {
                         if( userInfo.balance<userInfo.gameStatus.fsStake ) {
