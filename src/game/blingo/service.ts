@@ -50,15 +50,20 @@ export const blingoService = {
                         userInfo.cheat.cid++;
                     }
                 } else {
-                    if( ratio<( rtps[rtp-1]+0.02 ) ) {
-                        const symParam: any = {
-                            cells : userInfo.gameStatus.cells,
-                            gameMatches : gameMatches
-                        };
-                        userInfo.gameStatus.symbols = Functions.getSymbols( symParam );
-                    } else {
-                        userInfo.gameStatus.symbols = Functions.getEmptySymbols( userInfo.gameStatus.cells );
-                    }
+                    const symParam: any = {
+                        cells : userInfo.gameStatus.cells,
+                        gameMatches : gameMatches
+                    };
+                    userInfo.gameStatus.symbols = Functions.getSymbols( symParam );
+                    // if( ratio<( rtps[rtp-1]+0.02 ) ) {
+                    //     const symParam: any = {
+                    //         cells : userInfo.gameStatus.cells,
+                    //         gameMatches : gameMatches
+                    //     };
+                    //     userInfo.gameStatus.symbols = Functions.getSymbols( symParam );
+                    // } else {
+                    //     userInfo.gameStatus.symbols = Functions.getEmptySymbols( userInfo.gameStatus.cells );
+                    // }
                 }
 
                 if( userInfo.gameStatus.spinsRemaining===0 ) {

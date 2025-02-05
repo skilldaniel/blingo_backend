@@ -353,9 +353,9 @@ const generateGameResponse = ( params: any ) => {
     const gameInfo = params.gameInfo;
     const matches = generateMatchePatterns( gameInfo.spinMatches, gameInfo.cells, params.patternInfo );
     const hasPattern = matches.some(match => match.pattern.length > 0);
-    let removeMatches = removeRepatedPatterns( matches );
+    let removeMatches: any[] = [];
     if( hasPattern ) {
-
+        removeMatches = removeRepatedPatterns( matches );
     }
     let state = 0, spinType = 0;
     if( gameInfo.purCount>0 ) {
