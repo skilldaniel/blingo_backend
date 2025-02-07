@@ -12,8 +12,9 @@ export const blingoService = {
         const userInfo = await Models.getUserInfo( token );
         if(userInfo === null) return Constants.ERRORDESCRIPTION[ 6 ];
         const action = actionParams.action;
-        const rtp = userInfo.property.rtp;
-        console.log(`-----------------> action :: ${ action } ---------------------->`);
+        const rtp = 1;
+
+        console.log(`----------> action :: ${ action } ---------->`);
         let winSymbol = 0;
         let actionFlag = 0; // 0::SPIN, 1::CHOOSE_CELL, 2::COMPLETE, 3::NONE
         let totalSymbolWin = 0, chosenCellIdx = -1, bonusProfit = 0;;
@@ -52,7 +53,8 @@ export const blingoService = {
                 } else {
                     const symParam: any = {
                         cells : userInfo.gameStatus.cells,
-                        gameMatches : gameMatches
+                        purCount : userInfo.gameStatus.purCount,
+                        gameMatches : gameMatches,
                     };
                     userInfo.gameStatus.symbols = Functions.getSymbols( symParam );
                     // if( ratio<( rtps[rtp-1]+0.02 ) ) {
@@ -72,10 +74,7 @@ export const blingoService = {
                     if( userInfo.gameStatus.purCount===1 ) userInfo.gameStatus.fspSpinsRemaining--;
                     else if( userInfo.gameStatus.purCount>1 && !userInfo.gameStatus.isExtra ) userInfo.gameStatus.fpSpinsRemaining--;
                 }
-                console.log(`-----> spinsRemaining=${userInfo.gameStatus.spinsRemaining}, purCount=${userInfo.gameStatus.purCount}, fsStake=${userInfo.gameStatus.fsStake}`);
-                if( userInfo.gameStatus.purCount===0 ) {
-                    console.log(`symbols=${userInfo.gameStatus.symbols}`);
-                }
+
                 if( userInfo.gameStatus.purCount===1 || userInfo.gameStatus.isExtra ) {
                     isExtra = userInfo.gameStatus.symbols.some( (num:any) => userInfo.gameStatus.cells.includes(num) );
                     if( !isExtra ) {
@@ -83,7 +82,6 @@ export const blingoService = {
                     } else {
                         userInfo.gameStatus.purCount=1;
                     }
-                    console.log(`isExtra=${isExtra}, ${userInfo.gameStatus.symbols.length} symbols =`, userInfo.gameStatus.symbols );
                 }
                 
                 userInfo.gameStatus.symbols.forEach(( symbol:string, idx:number) => {
@@ -181,7 +179,6 @@ export const blingoService = {
                     userInfo.gameStatus.spinMatches.push( chosenCellIdx );
                 }
             }
-            // console.log(`spinMatches=[ ${userInfo.gameStatus.spinMatches} ], ${userInfo.gameStatus.spinMatches.length}`);
 
             if( userInfo.gameStatus.spinMatches.length>0 ) {
                 slingoWinInfo = Functions.checkSlingoWinLines( userInfo.gameStatus.matchPatterns, userInfo.gameStatus.gameMatches, userInfo.gameStatus.spinMatches );
@@ -216,11 +213,11 @@ export const blingoService = {
             }
             bonusReelInfo = Functions.generateBonusSpins( bsParams );
             bonusProfit = bonusReelInfo.bonusProfit;
+            // console.log(`---> inc balance case 1`, userInfo.gameStatus);
             userInfo.balance = Math.round( userInfo.balance*100+userInfo.gameStatus.totalSymbolWin*100+bonusProfit*100 )/100;
             userInfo.gameStatus.chooseTime=-1;
             userInfo.gameStatus.isChoose=false;
             if( userInfo.cheat.isCheat ) {
-                console.log(`case1 isCheat=${userInfo.cheat.isCheat}`);
                 userInfo.cheat.isCheat = false;
                 userInfo.cheat.cid = 0;
                 userInfo.cheat.cells.length = 0;
@@ -310,6 +307,7 @@ export const blingoService = {
                             return "insuffcient balance";
                         } else {
                             userInfo.gameStatus.totalStake = Math.round( userInfo.gameStatus.totalStake*100+userInfo.gameStatus.fsStake*100 ) / 100;
+                            // console.log(`---> dec balance case 1 -`, userInfo.gameStatus.fsStake);
                             userInfo.balance = Math.round( userInfo.balance*100-userInfo.gameStatus.fsStake*100 )/100;
                             totalStake = Math.round( totalStake*100 + userInfo.gameStatus.fsStake*100 ) / 100;
                             ratio = Math.round( totalProfit*100/totalStake ) / 100;
@@ -350,8 +348,6 @@ export const blingoService = {
                         bonusReelInfo = Functions.generateBonusSpins( bsParams );
                         userInfo.gameStatus.chooseTime=-1;
                         bonusProfit = bonusReelInfo.bonusProfit;
-                        userInfo.balance = Math.round( userInfo.balance*100 + bonusProfit*100 ) / 100;
-                        userInfo.gameStatus.totalWin = Math.round( userInfo.gameStatus.totalWin*100+bonusProfit*100 )/100;
                     }
 
                     const chooseParams = {
@@ -373,17 +369,24 @@ export const blingoService = {
                         gameInfo    : userInfo.gameStatus,
                     };
                     response = Functions.generateChooseCellResponse( chooseParams );
+                    if( userInfo.gameStatus.matchPatterns.length===12  ) {
+                        console.log(`---> inc balance case 2-`, bonusProfit);
+                        userInfo.balance = Math.round( userInfo.balance*100 + bonusProfit*100 ) / 100;
+                        await Models.updateUserBalance( userInfo.token, userInfo.balance );
+                    }
                 }
                 if( userInfo.gameStatus.purCount>=1 ) {
+                    console.log(`---> dec balance case 2 -`, userInfo.gameStatus.fsStake );
                     userInfo.gameStatus.totalStake = Math.round( userInfo.gameStatus.totalStake*100+userInfo.gameStatus.fsStake*100 ) / 100;
                     userInfo.balance = Math.round( userInfo.balance*100-userInfo.gameStatus.fsStake*100 )/100;
+                    await Models.updateUserBalance( userInfo.token, userInfo.balance )
                     totalStake = Math.round( totalStake*100+userInfo.gameStatus.fsStake*100 ) / 100;
                     ratio = Math.round( totalProfit*100/totalStake ) / 100;
-                    await Models.updateUserBalance( userInfo.token, userInfo.balance )
                 }
                 break;
             case "collect" :
                 if( userInfo.gameStatus.matchPatterns.length>2 && actionFlag !== 2 ) {
+                    actionFlag = 3;
                     winSymbol = userInfo.gameStatus.matchPatterns.length;
                     const bsParams = {
                         winSymbol : winSymbol,
@@ -391,11 +394,10 @@ export const blingoService = {
                     }
                     bonusReelInfo = Functions.generateBonusSpins( bsParams );
                     bonusProfit = bonusReelInfo.bonusProfit;
-                    userInfo.balance = Math.round( userInfo.balance*100 + bonusProfit*100 ) / 100;
-                    actionFlag = 3;
                     userInfo.gameStatus.totalWin = Math.round( userInfo.gameStatus.totalWin*100+bonusProfit*100 )/100 ;
                     totalProfit = Math.round( totalProfit*100+userInfo.gameStatus.totalWin*100+bonusProfit*100 )/100 ;
                     ratio = Math.round( totalProfit*100 / totalStake ) / 100;
+                    
                 };
                 if( userInfo.gameStatus.matchPatterns.length<=2 ) {
                     actionFlag = 0;
@@ -411,7 +413,12 @@ export const blingoService = {
                     gameInfo  : userInfo.gameStatus,
                 };
                 response = Functions.generateCollectResponse( collectParams );
-
+                if( winSymbol>0 ) {
+                    console.log(`---> inc balance case 3`, userInfo.gameStatus.totalStake, bonusProfit);
+                    userInfo.balance = Math.round( userInfo.balance*100 + bonusProfit*100+userInfo.gameStatus.fsStake*100 ) / 100;
+                    await Models.updateUserBalance( userInfo.token, userInfo.balance );
+                    actionFlag = 3;
+                }
                 userInfo.gameStatus.fsStake = 0;
                 userInfo.gameStatus.totalStake = 0;
                 userInfo.gameStatus.isPurchase = false;
@@ -428,7 +435,6 @@ export const blingoService = {
                 userInfo.gameStatus.gameMatches.length = 0;
                 userInfo.gameStatus.matchPatterns.length = 0;
                 if( userInfo.cheat.isCheat ) {
-                    console.log(`case2 isCheat=${userInfo.cheat.isCheat}`);
                     userInfo.cheat.isCheat = false;
                     userInfo.cheat.cid = 0;
                     userInfo.cheat.cells.length = 0;

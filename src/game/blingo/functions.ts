@@ -27,11 +27,8 @@ export const getCurrentTime = () => {
 /**
  * gameRouter
  */
-let round = 0, sid = 0, rid = 0 ;
+let round = 0;
 const maxVal = 75, wild = 12;
-const cellsArr = [
-    [ 5,25,31,53,61, 7,22,43,55,65, 11,18,38,46,74, 3,21,33,49,64, 13,26,40,56,71 ]
-];
 
 const generateMatchePatterns = ( matchesArr:number[], cells:number[], patternInfo:any ) => {
     const matches : any[] = [];
@@ -49,23 +46,14 @@ const generateMatchePatterns = ( matchesArr:number[], cells:number[], patternInf
             };
             matches.push( matchItem );
         });
-        // for (let i = 1; i < matches.length; i++) {
-        //     if (matches[i].pattern.includes(2)) {
-        //         for (let j = 0; j < i; j++) {
-        //             matches[j].pattern = matches[j].pattern.filter((p:number) => p !== 2);
-        //         }
-        //     }
-        // }
     }
-    // console.log(`matches`, matches)
     return matches;
 }
 
 export const getCells = () => {
     let numbers = Array.from({ length: maxVal }, (_, i) => i + 1);
     numbers = makeRandArr( numbers );
-    // const cells : number[] = numbers.slice(0, 25);
-    const cells = cellsArr[ 0 ];
+    const cells : number[] = numbers.slice(0, 25);
     const remainCells = numbers.filter( num => !cells.includes( num ) );
 
     return {
@@ -75,27 +63,13 @@ export const getCells = () => {
 }
 
 export const getSymbols = ( params:any ) => {
-    // /*
-    const symbolsArr = [
-        ["5", "22", "38", "0", "71"], ["5", "25", "31", "0", "61"],
-        ["0", "55", "46", "0", "56"], ["0", "0", "53", "49", "0"]
-        // [ "5", "22", "49", "71", "74" ], [ "46", "18", "13", "5", "24" ], [ "11", "67", "38", "45", "34" ],
-        // ["1", "RJ", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"], ["12", "J", "45", "51", "64"], ["5", "RJ", "D", "58", "75"], ["11", "RJ", "38", "J", "69"], ["3", "30", "31", "56", "74"], 
-        // // FREE_PURCHASE_SPIN
-        // ["13", "27", "PG", "60", "70"], [], ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], ["11", "23", "43", "52", "68"], ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
-        // // purchase 49,74->49,71
-        // ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], ["13", "18", "37", "53", "68"]
-    ];
-    // [  ], [  ], [  ], [  ],
-    let symbols = symbolsArr[ sid ];
-    sid++;
-    // */
-    /*
+    const PG = "PG", RJ="RJ", SJ="SJ", J="J", FS="FS", D="D";
     const totalSymbols = Array.from({ length: maxVal }, (_, i) => i + 1);
     let misMatched = totalSymbols.filter( num => !params.gameMatches.includes( num ) );
     misMatched = makeRandArr( misMatched );
     let symbols = misMatched.slice(0,5).map(String);
     let symCnt = 0;
+    let hasSJ = false;
     const cntRand = isaac.random();
     if( cntRand>0.99 ) symCnt = 5;
     else if( cntRand>0.96 ) symCnt = 4;
@@ -103,26 +77,52 @@ export const getSymbols = ( params:any ) => {
     else if( cntRand>0.84 ) symCnt = 2;
     else if( cntRand>0.7 ) symCnt = 1;
     if( symCnt>0 ) {
+        let fsCnt = 0;
         const symbolPoss = makeRandArr( [0,1,2,3,4] );
         for( let i=0; i<symCnt; i++ ) {
             const specRand = isaac.random();
-            if( specRand>0.5 ) {
-                if( specRand>0.95 ) symbols[ symbolPoss[i] ] = "FS";
-                else if( specRand>0.91 ) symbols[ symbolPoss[i] ] = "SJ";
-                else if( specRand>0.83 ) symbols[ symbolPoss[i] ] = "RJ";
-                else if( specRand>0.75 ) symbols[ symbolPoss[i] ] = "J";
-                else if( specRand>0.61 ) symbols[ symbolPoss[i] ] = "PG";
-                else symbols[ symbolPoss[i] ] = "D";
+            if( hasSJ ) {
+                if( specRand>0.834 ) symbols[ symbolPoss[i] ] = PG;
+                else if( specRand>0.782 ) symbols[ symbolPoss[i] ] = D;
+                else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+            } else {
+                if( specRand>0.95 ) hasSJ = true, symbols[ symbolPoss[i] ] = SJ;
+                else if( specRand>0.91 ) symbols[ symbolPoss[i] ] = RJ;
+                else if( specRand>0.85 ) symbols[ symbolPoss[i] ] = J;
+                else if( specRand>0.73) symbols[ symbolPoss[i] ] = PG;
+                else if( specRand>0.62 ) symbols[ symbolPoss[i] ] = D;
+                else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
             }
         }
-        if( symbols.filter(symbol=>symbol==="SJ").length>1 ) {
-            for( let i=1; i<symbols.filter(symbol=>symbol==="SJ").length; i++ ) {
-                const sjInd = symbols.indexOf("SJ");
-                if( sjInd !== -1 ) symbols[ sjInd ] = `7`;
+
+        let sjCnt = symbols.filter(symbol=>symbol===SJ).length;
+        let rjCnt = symbols.filter(symbol=>symbol===RJ).length;
+        let jCnt = symbols.filter(symbol=>symbol===J).length;
+        if( sjCnt>1 ) {
+            let mid = 5;
+            console.log("symbols1 = ", symbols );
+            while ( sjCnt>1 ) {
+                const sjInd = symbols.indexOf(SJ);
+                if( sjInd !== -1 ) mid++, sjCnt--, symbols[ sjInd ] = String(misMatched[ mid ]);
             }
+            console.log("sj symbols = ", symbols );
+            if( rjCnt>0 ) {
+                while (rjCnt>0) {
+                    const rjInd = symbols.indexOf(RJ);
+                    if( rjInd !== -1 ) mid++, rjCnt--, symbols[ rjInd ] = String(misMatched[ mid ]);
+                }
+            }
+            console.log("rj symbols = ", symbols );
+            if( jCnt>0 ) {
+                while (jCnt>0) {
+                    const jInd = symbols.indexOf(J);
+                    if( jInd !== -1 ) mid++, jCnt--, symbols[ jInd ] = String(misMatched[ mid ]);
+                }
+            }
+            console.log("j symbols = ", symbols );
         }
     }
-    */
+    // */
     return symbols;
 }
 
@@ -143,11 +143,10 @@ export const checkRowCells = ( gameMatches:number[], row:number ) => {
 export const calcSpinPrice = ( params:any ) => {
     const rtps = [ 0.96, 0.94, 0.92 ];
     const remainCell = params.totalMatches.length;
-    const price = params.totalMatches.length===25 ? 0.01 : 
-                    params.patternLength===0 || params.patternLength===12 ? 0.01 : 
-                        Math.round( 100*params.stake*rtps[params.rtp-1]*(maxVal-remainCell) / ((25-remainCell)*(12-params.patternLength)) )/100;
+    const price = params.totalMatches.length===25 || params.patternLength===0 || params.patternLength===12 ? 0.01 : 
+                        Math.round( 100*params.stake*(maxVal-remainCell) / ((25-remainCell)*rtps[params.rtp-1]*(12-params.patternLength)) )/100;
 
-    console.log(`spin price is ${price}=${ params.stake }*${rtps[ params.rtp-1 ]}*${25-remainCell}/( ${ 12-params.patternLength }), length=${ remainCell } `);
+    console.log(`===> spinPrice ${price}=${ params.stake }*${(maxVal-remainCell)}/(${25-remainCell}*${rtps[ params.rtp-1 ]}*${ 12-params.patternLength }), length=${ remainCell }`);
     return price;
 }
 
@@ -239,7 +238,6 @@ export const generateStartGameResponse = (params: any) => {
 }
 
 const removeRepatedPatterns = ( matches:any ) => {
-    console.log("matches=", matches);
     const seen: number[] = [];
     for( let i=matches.length-1; i>=0; i-- ) {
         matches[i].pattern = matches[i].pattern.filter( (num:number) => {
@@ -250,7 +248,6 @@ const removeRepatedPatterns = ( matches:any ) => {
             return true;
         })
     }
-    console.log(`seen=${ seen }, removed matches`, matches);
     return matches;
 }
 
@@ -317,7 +314,7 @@ const checkPayLines = ( reels:number[][][], stake:number ) => {
                     if( subReels[ i ][ line[i] ] === rightSymbol || subReels[ i ][ line[i] ] === wild ) rightSameCnt++;
                     else break;
                 }
-                if( rightSameCnt>=3 ) {
+                if( rightSameCnt===3 || rightSameCnt===4 ) {
                     rightPayItem.symbol = rightSymbol;
                     rightPayItem.sameCnt = rightSameCnt;
                     rightPayItem.direct = 1;
@@ -414,26 +411,48 @@ const generateBalanceResponse = ( balance:number, currency:string ) => {
     };
     return balanceResp;
 }
-// [ [  ], [  ], [  ], [  ], [  ] ],
-const fsReels = [
-    [ [ 12,6,12 ], [ 9,8,6 ], [ 7,7,5 ], [ 8,12,6 ], [ 3,12,5 ] ],
-];
 
 export const generateBonusSpins = ( params:any ) => {
-    let reels : number[][] = [];
     let expSubReels: number[][] = [];
-    const fullReels = [ 3,4,5,6,7,8 ];
+    let reels : number[][] = [];
+    let isExpand = false;
+    let maxCnt = 1;
+    const maxRules : { [ key:number ] : number[] } = {
+        3 : [ 0.6, 0.9 ],
+        4 : [ 0.65, 0.89 ],
+        5 : [ 0.65, 0.86 ],
+        6 : [ 0.5, 0.83 ],
+        7 : [ 0.5, 0.8 ],
+        8 : [ 0.45, 0.75 ],
+        9 : [ 0.35, 0.65 ],
+        10 : [ 0.35, 0.65 ],
+        12 : [ 0.35, 0.65 ]
+    }
     const cntRand = isaac.random();
-    const maxCnt = 1 ;
-    // const maxCnt = cntRand > 0.99 ? 3 : cntRand > 0.5 ? 2 : 1 ;
+    const fullReels = [ 3,4,5,6,7,8 ];
     const reelMrx : typeof reels[] = [];
     const expReelMrx : typeof reels[] = [];
-    let isExpand = false;
+
     if( params.winSymbol>8 ) {
         isExpand = true;
-        params.winSymbol = Math.floor( isaac.random()*6 )+3;
+        switch ( params.winSymbol ) {
+            case 9:
+                params.winSymbol = 7;
+                break;
+            case 10:
+                params.winSymbol = 8;
+                break;
+            case 12:
+                params.winSymbol = Math.floor( isaac.random()*6 )+3;;
+                break;
+        }
     }
-
+    
+    for( let i=0; i<2; i++ ) {
+        if( cntRand>=maxRules[params.winSymbol][i] ) {
+            maxCnt++;
+        }
+    }
     for( let i=0; i<maxCnt; i++ ) {
         for( let j=0; j<5; j++ ) {
             reels[ j ] = [];
@@ -459,15 +478,12 @@ export const generateBonusSpins = ( params:any ) => {
         }
 
         if( isExpand ) {
-            const col = getFloorRandom( 5 );
+            const col = getFloorRandom( 3 )+1;
             const idx = getFloorRandom( 3 );
             reels[ col ][ idx ] = 12;
             expSubReels[ col ][ idx ] = 12;
         }
 
-        // reels = fsReels[ rid ];
-        // expSubReels = fsReels[ rid ];
-        // rid++;
         reelMrx.push( [ ...reels ] );
         const flatReel = expSubReels.flat();
         if( flatReel.includes(wild) ) {
@@ -490,12 +506,12 @@ export const generateBonusSpins = ( params:any ) => {
 }
 
 export const generateBonusResponse = ( params: any ) => {
+    let totalWin = 0;
     const directDict: { [ key:number ] : string } = {
         0 : "LEFT_TO_RIGHT",
         1 : "RIGHT_TO_LEFT"
     };
     const spins : any[] = [];
-    let totalWin = 0;
     params.bonusReelInfo.reelMrx.forEach((subReels: number[][], idx: number) => {
         let spinTotalWin = 0;
         let isExpand = false;
@@ -688,8 +704,6 @@ export const generateCollectResponse = ( params:any ) => {
         const bonusResp = generateBonusResponse( bonusParams );
         Object.assign( response, bonusResp );
     }
-    // const response = collects[ ctid ];
-    // ctid++;
     return response;
 }
 /**
@@ -709,7 +723,6 @@ const checkOtherLines = ( matchedPos:number[], slingoWinCnt:number ) => {
 }
 
 export const simulateGameByAction = ( params:any ) => {
-    console.log(` action=${params.action}, stake=${params.stake} `);
     const cellInfo = getCells();
     const cells = cellInfo.cells;
     const cheatSymbols : number[][] = [];
@@ -765,14 +778,6 @@ export const simulateGameByAction = ( params:any ) => {
         if( !noLine ) {
 
         }
-        // console.log(`matchWinLines=`, matchWinLines );
-        // console.log(`matchedPos=`, matchedPos );
-        // if( !matchWinLines.includes(10) && !matchWinLines.includes(11) ) {
-        //     console.log('matchWinLines1=', matchWinLines);
-        //     matchWinLines.pop();
-        //     matchWinLines.push( 10 );
-        //     console.log('matchWinLines2=', matchWinLines);
-        // }
     }
 
     const matchedTarget = matchedPos.length;
