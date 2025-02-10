@@ -200,21 +200,25 @@ export const blingoService = {
         }
         if( userInfo.gameStatus.gameMatches.length===25 ) {
             endGame = true;
-            actionFlag = 2;
             winSymbol = 12;
         } else if( userInfo.gameStatus.fpSpinsRemaining===0 ) {
             endGame = true;
             winSymbol = userInfo.gameStatus.matchPatterns.length;
         }
         if( endGame ) {
+            actionFlag = 2;
             const bsParams = {
                 winSymbol : winSymbol,
                 stake : userInfo.gameStatus.stake
             }
-            bonusReelInfo = Functions.generateBonusSpins( bsParams );
-            bonusProfit = bonusReelInfo.bonusProfit;
-            // console.log(`---> inc balance case 1`, userInfo.gameStatus);
-            userInfo.balance = Math.round( userInfo.balance*100+userInfo.gameStatus.totalSymbolWin*100+bonusProfit*100 )/100;
+            if( winSymbol>2 ) {
+                bonusReelInfo = Functions.generateBonusSpins( bsParams );
+                bonusProfit = bonusReelInfo.bonusProfit;
+                // console.log(`---> inc balance case 1`, userInfo.gameStatus);
+                userInfo.balance = Math.round( userInfo.balance*100+userInfo.gameStatus.totalSymbolWin*100+bonusProfit*100 )/100;
+            } else {
+                actionFlag = 4;
+            }
             userInfo.gameStatus.chooseTime=-1;
             userInfo.gameStatus.isChoose=false;
             if( userInfo.cheat.isCheat ) {

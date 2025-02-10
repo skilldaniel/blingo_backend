@@ -54,6 +54,7 @@ export const getCells = () => {
     let numbers = Array.from({ length: maxVal }, (_, i) => i + 1);
     numbers = makeRandArr( numbers );
     const cells : number[] = numbers.slice(0, 25);
+    // const cells : number[] = [ 6,21,31,47,65,12,19,43,51,62,11,30,38,46,66,2,26,36,52,73,5,20,40,60,63 ];
     const remainCells = numbers.filter( num => !cells.includes( num ) );
 
     return {
@@ -61,8 +62,17 @@ export const getCells = () => {
         remainCells : remainCells
     }
 }
-
+let tid = 0;
 export const getSymbols = ( params:any ) => {
+    // const tSymbols = [
+    //     ["1", "75", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"], ["12", "J", "45", "51", "64"], ["5", "26", "D", "58", "75"], ["11", "17", "38", "J", "69"], ["3", "30", "31", "56", "74"], 
+    //     // FREE_PURCHASE_SPIN
+    //     ["13", "27", "PG", "60", "70"], [], ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], ["11", "23", "43", "52", "68"], ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
+    //     // purchase
+    //     ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], ["13", "18", "37", "53", "68"]
+    // ]
+    // let symbols = tSymbols[ tid ];
+    // /*
     const PG = "PG", RJ="RJ", SJ="SJ", J="J", FS="FS", D="D";
     const totalSymbols = Array.from({ length: maxVal }, (_, i) => i + 1);
     let misMatched = totalSymbols.filter( num => !params.gameMatches.includes( num ) );
@@ -100,26 +110,22 @@ export const getSymbols = ( params:any ) => {
         let jCnt = symbols.filter(symbol=>symbol===J).length;
         if( sjCnt>1 ) {
             let mid = 5;
-            console.log("symbols1 = ", symbols );
             while ( sjCnt>1 ) {
                 const sjInd = symbols.indexOf(SJ);
                 if( sjInd !== -1 ) mid++, sjCnt--, symbols[ sjInd ] = String(misMatched[ mid ]);
             }
-            console.log("sj symbols = ", symbols );
             if( rjCnt>0 ) {
                 while (rjCnt>0) {
                     const rjInd = symbols.indexOf(RJ);
                     if( rjInd !== -1 ) mid++, rjCnt--, symbols[ rjInd ] = String(misMatched[ mid ]);
                 }
             }
-            console.log("rj symbols = ", symbols );
             if( jCnt>0 ) {
                 while (jCnt>0) {
                     const jInd = symbols.indexOf(J);
                     if( jInd !== -1 ) mid++, jCnt--, symbols[ jInd ] = String(misMatched[ mid ]);
                 }
             }
-            console.log("j symbols = ", symbols );
         }
     }
     // */
@@ -360,13 +366,16 @@ const generateGameResponse = ( params: any ) => {
         if( gameInfo.purCount > 1 ) state=2, spinType=3 ;
     } 
     if( params.actionFlag===2 ) state=3;
+    if( params.actionFlag===4 ) {
+        state = 3;
+    }
     const response = {
         game: {
             userId: params.userId,
             gameInstanceId: params.gameInstanceId,
             currencyCode: params.currency,
             state: GlobalConstants.STATES[ state ],
-            action: GlobalConstants.ACTIONS[ params.actionFlag ],
+            action: params.actionFlag===4 ? "SPIN" : GlobalConstants.ACTIONS[ params.actionFlag ],
             stake: gameInfo.stake,
             totalStake: gameInfo.totalStake,
             spinsRemaining: gameInfo.spinsRemaining < 0 ? 0 : gameInfo.spinsRemaining ,
