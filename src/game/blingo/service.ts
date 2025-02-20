@@ -257,7 +257,8 @@ export const blingoService = {
                 const curParams = {
                     cells : userInfo.gameStatus.cells,
                     balance : userInfo.balance,
-                    currency : userInfo.property.currency
+                    currency : userInfo.property.currency,
+                    rtp : rtps[ rtp ],
                 };
 
                 response = Functions.generateCurrentGameResponse( curParams );

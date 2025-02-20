@@ -818,6 +818,7 @@ export const simulateGameByAction = ( params:any ) => {
 export const generateCurrentGameResponse = ( params:any ) => {
     const response = {
         "config": {
+            "rtp" : params.rtp,
             "stake": {
                 "amounts": [ 0.1, 0.2, 0.5, 1, 2, 5, 10, 25, 50, 100 ],
                 "index": 2
