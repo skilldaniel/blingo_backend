@@ -51,33 +51,63 @@ const generateMatchePatterns = ( matchesArr:number[], cells:number[], patternInf
 }
 
 export const getCells = () => {
-    let numbers = Array.from({ length: maxVal }, (_, i) => i + 1);
-    numbers = makeRandArr( numbers );
-    const cells : number[] = numbers.slice(0, 25);
-    // const cells : number[] = [ 6,21,31,47,65,12,19,43,51,62,11,30,38,46,66,2,26,36,52,73,5,20,40,60,63 ];
-    const remainCells = numbers.filter( num => !cells.includes( num ) );
-
+    const subNumArr : number[][] = [];
+    let remainCells : number[] = [];
+    let cells: number[] = [];
+    for (let i = 0; i < 5; i++) {
+        let start = i*15;
+        let arr = Array.from({ length: 15 }, (_, index) => start + index+1);
+        let subNumbers = makeRandArr( arr );
+        subNumArr.push( subNumbers.slice( 0,5 ) );
+    }
+    for( let i=0; i<5; i++ ) {
+        for( let j=0; j<5; j++ ) {
+            cells[ 5*i+j ] = subNumArr[ j ][ i ];
+        }
+    }
     return {
         cells : cells,
         remainCells : remainCells
     }
 }
-let tid = 0;
+
+const checkSymbolByCols = ( cells:number[], matches:number[] ) => {
+    let colsCnt = [ 0,0,0,0,0 ];
+    let cols: number[] = [];
+    let col = 0;
+    matches.forEach((symb) => {
+        for( let i=1; i<=5; i++ ) {
+            if( symb<=15*i && cells.includes(symb) ) {
+                col = i-1;
+                colsCnt[ col ]++; 
+                break;
+            }
+        }
+    })
+    for( let i=0; i<5; i++ ) {
+        if( colsCnt[i]>4 ) cols.push( i );
+    }
+    return cols;
+}
+
 export const getSymbols = ( params:any ) => {
-    // const tSymbols = [
-    //     ["1", "75", "41", "49", "65"], ["8", "RJ", "D", "J", "J"], ["PG", "PG", "PG", "49", "61"], ["PG", "D", "35", "56", "75"], ["9", "26", "31", "59", "69"], ["PG", "J", "33", "49", "70"], ["12", "J", "45", "51", "64"], ["5", "26", "D", "58", "75"], ["11", "17", "38", "J", "69"], ["3", "30", "31", "56", "74"], 
-    //     // FREE_PURCHASE_SPIN
-    //     ["13", "27", "PG", "60", "70"], [], ["D", "28", "31", "57", "PG"], ["9", "20", "38", "54", "PG"], ["11", "23", "43", "52", "68"], ["14", "24", "44", "D", "63"], ["15", "26", "J", "54", "64"],  
-    //     // purchase
-    //     ["9", "30", "PG", "J", "72"], ["J", "27", "34", "53", "64"], ["9", "26", "44", "46", "63"], ["5", "16", "36", "49", "74"], ["6", "23", "41", "57", "63"], ["15", "21", "42", "46", "72"], ["J", "16", "35", "57", "J"], ["15", "22", "PG", "PG", "73"], ["1", "16", "PG", "55", "68"], ["4", "22", "PG", "D", "69"], ["7", "28", "32", "57", "PG"], ["J", "PG", "PG", "55", "PG"], ["13", "18", "37", "53", "68"]
-    // ]
-    // let symbols = tSymbols[ tid ];
-    // /*
     const PG = "PG", RJ="RJ", SJ="SJ", J="J", FS="FS", D="D";
     const totalSymbols = Array.from({ length: maxVal }, (_, i) => i + 1);
+    const misNumbers : number[][] = [];
     let misMatched = totalSymbols.filter( num => !params.gameMatches.includes( num ) );
     misMatched = makeRandArr( misMatched );
-    let symbols = misMatched.slice(0,5).map(String);
+    let symbols : any[] = [];
+    for( let i=0; i<misMatched.length; i++ ) {
+        let index = Math.floor(misMatched[i] / 15);
+        if (!misNumbers[index]) {
+            misNumbers[index] = [];
+        }
+        misNumbers[ index ].push( misMatched[i] );
+    }
+    for( let i=0; i<5; i++ ) {
+        symbols.push( misNumbers[ i ][ 0 ] )
+    }
+    
     let symCnt = 0;
     let hasSJ = false;
     const cntRand = isaac.random();
@@ -89,19 +119,23 @@ export const getSymbols = ( params:any ) => {
     if( symCnt>0 ) {
         let fsCnt = 0;
         const symbolPoss = makeRandArr( [0,1,2,3,4] );
+        const disableCols = checkSymbolByCols( params.cells, params.gameMatches );
+        console.log(`disableCols=`, disableCols)
         for( let i=0; i<symCnt; i++ ) {
             const specRand = isaac.random();
-            if( hasSJ ) {
-                if( specRand>0.834 ) symbols[ symbolPoss[i] ] = PG;
-                else if( specRand>0.782 ) symbols[ symbolPoss[i] ] = D;
-                else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
-            } else {
-                if( specRand>0.95 ) hasSJ = true, symbols[ symbolPoss[i] ] = SJ;
-                else if( specRand>0.91 ) symbols[ symbolPoss[i] ] = RJ;
-                else if( specRand>0.85 ) symbols[ symbolPoss[i] ] = J;
-                else if( specRand>0.73) symbols[ symbolPoss[i] ] = PG;
-                else if( specRand>0.62 ) symbols[ symbolPoss[i] ] = D;
-                else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+            if( !disableCols.includes(i) ) {
+                if( hasSJ ) {
+                    if( specRand>0.834 ) symbols[ symbolPoss[i] ] = PG;
+                    else if( specRand>0.782 ) symbols[ symbolPoss[i] ] = D;
+                    else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                } else {
+                    if( specRand>0.95 ) hasSJ = true, symbols[ symbolPoss[i] ] = SJ;
+                    else if( specRand>0.91 ) symbols[ symbolPoss[i] ] = RJ;
+                    else if( specRand>0.85 ) symbols[ symbolPoss[i] ] = J;
+                    else if( specRand>0.73) symbols[ symbolPoss[i] ] = PG;
+                    else if( specRand>0.62 ) symbols[ symbolPoss[i] ] = D;
+                    else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                }
             }
         }
 
@@ -771,8 +805,8 @@ export const simulateGameByAction = ( params:any ) => {
             slingoWinCnt = 12;
             break;
     }
-    // let matchWinLines = makeRandArr( keys ).slice( 0, slingoWinCnt );
-    let matchWinLines = [ 6, 9, 10, 3, 0 ];
+    let matchWinLines = makeRandArr( keys ).slice( 0, slingoWinCnt );
+    // let matchWinLines = [ 6, 9, 10, 3, 0 ];
     matchWinLines.forEach(( matchLine ) => {
         GlobalConstants.SLINGOWINLINES[ matchLine ].forEach( pos => {
             if( !matchedPos.includes( pos ) ) {
