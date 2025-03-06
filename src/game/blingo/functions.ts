@@ -1,5 +1,6 @@
 import isaac from 'isaac';
 import * as GlobalConstants from "@/game/blingo/constants";
+import { stat } from 'node:fs';
 
 const getFloorRandom = ( len:number, flag="i" ) => {
     if( flag==="m ") return Math.floor( Math.random()*len );
@@ -30,7 +31,7 @@ export const getCurrentTime = () => {
 let round = 0;
 const maxVal = 75, wild = 12;
 
-const generateMatchePatterns = ( matchesArr:number[], cells:number[], patternInfo:any ) => {
+const generateMatchePatterns = ( matchesArr:number[], patternInfo:any ) => {
     const matches : any[] = [];
     if( matchesArr.length > 0 ) {
         matchesArr.forEach(( no:number, idx:number ) => {
@@ -41,7 +42,7 @@ const generateMatchePatterns = ( matchesArr:number[], cells:number[], patternInf
                 }
             });
             const matchItem = {
-                number : cells[ no ],
+                number : no,
                 pattern : pattern
             };
             matches.push( matchItem );
@@ -53,18 +54,19 @@ const generateMatchePatterns = ( matchesArr:number[], cells:number[], patternInf
 export const getCells = () => {
     const subNumArr : number[][] = [];
     let remainCells : number[] = [];
-    let cells: number[] = [];
-    for (let i = 0; i < 5; i++) {
-        let start = i*15;
-        let arr = Array.from({ length: 15 }, (_, index) => start + index+1);
-        let subNumbers = makeRandArr( arr );
-        subNumArr.push( subNumbers.slice( 0,5 ) );
-    }
-    for( let i=0; i<5; i++ ) {
-        for( let j=0; j<5; j++ ) {
-            cells[ 5*i+j ] = subNumArr[ j ][ i ];
-        }
-    }
+    let cells: number[] = [ 14,19,37,57,62,8,27,45,54,61,7,18,39,50,65,6,23,43,51,69,1,16,31,46,70 ];
+    // for (let i = 0; i < 5; i++) {
+    //     let start = i*15;
+    //     let arr = Array.from({ length: 15 }, (_, index) => start + index+1);
+    //     let subNumbers = makeRandArr( arr );
+    //     subNumArr.push( subNumbers.slice( 0,5 ) );
+    // }
+    // for( let i=0; i<5; i++ ) {
+    //     for( let j=0; j<5; j++ ) {
+    //         cells[ 5*i+j ] = subNumArr[ j ][ i ];
+    //     }
+    // }
+
     return {
         cells : cells,
         remainCells : remainCells
@@ -89,23 +91,23 @@ const checkSymbolByCols = ( cells:number[], matches:number[] ) => {
     }
     return cols;
 }
-
+let ftid = 0;
 export const getSymbols = ( params:any ) => {
     const PG = "PG", RJ="RJ", SJ="SJ", J="J", FS="FS", D="D";
     const totalSymbols = Array.from({ length: maxVal }, (_, i) => i + 1);
     const misNumbers : number[][] = [];
     let misMatched = totalSymbols.filter( num => !params.gameMatches.includes( num ) );
     misMatched = makeRandArr( misMatched );
-    let symbols : any[] = [];
+    let symbols : string[] = [];
     for( let i=0; i<misMatched.length; i++ ) {
-        let index = Math.floor(misMatched[i] / 15);
+        let index = Math.floor((misMatched[i]-1) / 15);
         if (!misNumbers[index]) {
             misNumbers[index] = [];
         }
         misNumbers[ index ].push( misMatched[i] );
     }
     for( let i=0; i<5; i++ ) {
-        symbols.push( misNumbers[ i ][ 0 ] )
+        symbols.push(String( misNumbers[ i ][ 0 ] ));
     }
     
     let symCnt = 0;
@@ -120,21 +122,26 @@ export const getSymbols = ( params:any ) => {
         let fsCnt = 0;
         const symbolPoss = makeRandArr( [0,1,2,3,4] );
         const disableCols = checkSymbolByCols( params.cells, params.gameMatches );
-        console.log(`disableCols=`, disableCols)
         for( let i=0; i<symCnt; i++ ) {
             const specRand = isaac.random();
             if( !disableCols.includes(i) ) {
                 if( hasSJ ) {
                     if( specRand>0.834 ) symbols[ symbolPoss[i] ] = PG;
                     else if( specRand>0.782 ) symbols[ symbolPoss[i] ] = D;
-                    else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
                 } else {
-                    if( specRand>0.95 ) hasSJ = true, symbols[ symbolPoss[i] ] = SJ;
-                    else if( specRand>0.91 ) symbols[ symbolPoss[i] ] = RJ;
-                    else if( specRand>0.85 ) symbols[ symbolPoss[i] ] = J;
-                    else if( specRand>0.73) symbols[ symbolPoss[i] ] = PG;
-                    else if( specRand>0.62 ) symbols[ symbolPoss[i] ] = D;
-                    else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                    // console.log(`isExtra=${params.isExtra}`)
+                    if( params.isExtra ) {
+                        if( specRand>0.73) symbols[ symbolPoss[i] ] = PG;
+                        else if( specRand>0.62 ) symbols[ symbolPoss[i] ] = D;
+                        else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                    } else {
+                        if( specRand>0.95 ) hasSJ = true, symbols[ symbolPoss[i] ] = SJ;
+                        else if( specRand>0.91 ) symbols[ symbolPoss[i] ] = RJ;
+                        else if( specRand>0.85 ) symbols[ symbolPoss[i] ] = J;
+                        else if( specRand>0.73) symbols[ symbolPoss[i] ] = PG;
+                        else if( specRand>0.62 ) symbols[ symbolPoss[i] ] = D;
+                        else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                    }
                 }
             }
         }
@@ -162,7 +169,12 @@ export const getSymbols = ( params:any ) => {
             }
         }
     }
-    // */
+    const ftSymbols = [
+        ["5", "PG", "44", "55", "75"], ["13", "26", "SJ", "51", "61"],["12", "29", "35", "47", "74"],["2", "18", "32", "58", "70"],["7", "PG", "44", "50", "71"],["6", "23", "FS", "55", "74"],["12", "24", "37", "54", "SJ"],["11", "20", "38", "47", "62"],["J", "16", "43", "60", "74"],["12", "PG", "44", "47", "63"],["5", "18", "D", "50", "67"]
+        // ,["12", "PG", "D", "60", "61"],[],["11", "16", "39", "52", "64"]
+    ];
+    symbols = ftSymbols[ ftid ];
+    ftid++;
     return symbols;
 }
 
@@ -226,12 +238,8 @@ export const checkSlingoWinLines = ( matchedPatterns:number[], gameMatches:numbe
 export const getIdxMatchedSymbol = ( cells:number[], symbols:string[] ) => {
     const matches : number[] = [];
     symbols.forEach((symbol:string) => {
-        if( !isNaN(parseFloat(symbol)) ) {
-            const idx = cells.indexOf(parseFloat(symbol));
-            if( idx >= 0 ) {
-                matches.push( idx );
-            }
-        }
+        const numSym = parseFloat(symbol);
+        if( !isNaN(numSym) && cells.includes( numSym )) matches.push( numSym );
     });
     return matches ;
 }
@@ -388,20 +396,12 @@ const generateTriggers = ( line:number, sameCnt:number ) => {
 
 const generateGameResponse = ( params: any ) => {
     const gameInfo = params.gameInfo;
-    const matches = generateMatchePatterns( gameInfo.spinMatches, gameInfo.cells, params.patternInfo );
+    const matches = generateMatchePatterns( gameInfo.spinMatches, params.patternInfo );
     const hasPattern = matches.some(match => match.pattern.length > 0);
-    let removeMatches: any[] = [];
-    if( hasPattern ) {
-        removeMatches = removeRepatedPatterns( matches );
-    }
+    let removeMatches: any[] = hasPattern ? removeRepatedPatterns( matches ) : [];
     let state = 0, spinType = 0;
-    if( gameInfo.purCount>0 ) {
-        if( gameInfo.purCount===1 ) state=1, spinType=2 ;
-        if( gameInfo.purCount > 1 ) state=2, spinType=3 ;
-    } 
-    if( params.actionFlag===2 ) state=3;
-    if( params.actionFlag===4 ) {
-        state = 3;
+    if( gameInfo.spinsRemaining===0 && gameInfo.fsRemain>0 ) {
+        state = 1;
     }
     const response = {
         game: {
@@ -413,9 +413,9 @@ const generateGameResponse = ( params: any ) => {
             stake: gameInfo.stake,
             totalStake: gameInfo.totalStake,
             spinsRemaining: gameInfo.spinsRemaining < 0 ? 0 : gameInfo.spinsRemaining ,
-            freeSpinsRemaining: gameInfo.fsSpinsRemaining,
+            freeSpinsRemaining: gameInfo.fsRemain,
             freePurchaseSpinsRemaining: gameInfo.fspSpinsRemaining,
-            purchaseSpinsRemaining: gameInfo.fpSpinsRemaining,
+            purchaseSpinsRemaining: gameInfo.purRemaining,
             freeSpinsAwarded: gameInfo.fsAwarded,
             freePurchaseSpinsAwarded: gameInfo.purCount > 0 ? 1 : 0,
             spin: {
@@ -701,7 +701,7 @@ export const generateCollectResponse = ( params:any ) => {
             spinsRemaining: gameInfo.spinsRemaining,
             freeSpinsRemaining: 0,
             freePurchaseSpinsRemaining: gameInfo.fspSpinsRemaining,
-            purchaseSpinsRemaining: gameInfo.fpSpinsRemaining,
+            purchaseSpinsRemaining: gameInfo.purRemaining,
             freeSpinsAwarded: 0,
             freePurchaseSpinsAwarded: 1, // gameInfo.isFreeSpin ? 1 : 0,
             spin: {

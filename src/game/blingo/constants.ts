@@ -26,8 +26,8 @@ export const ERRORDESCRIPTION : {[key: number]: string} = {
 }
 
 export const ACTIONS = [ "SPIN", "CHOOSE_CELL", "NONE" ];
-export const STATES = [ "STANDARD_SPIN", "FREE_PURCHASE_SPIN", "PURCHASE_SPIN", "COMPLETE" ];
-export const SPINTYPES = [ "STANDARD", "RESPIN", "FREE_PURCHASE", "PURCHASE", "FREE" ];
+export const STATES = [ "STANDARD_SPIN", "FREE_SPIN", "FREE_PURCHASE_SPIN", "PURCHASE_SPIN", "COMPLETE" ];
+export const SPINTYPES = [ "STANDARD", "FREE_PURCHASE", "PURCHASE", "FREE", "RESPIN" ];
 
 export const PAYTABLE : { [ key:number ] : number[] } = {
     3 : [ 25, 10, 5 ],      // BLUE_GEM

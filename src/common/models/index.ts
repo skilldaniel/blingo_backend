@@ -25,14 +25,16 @@ export const addUser = async( newUser:any ) => {
         stake   : 0.5,
         fsStake : 0,
         totalStake  : 0,
+        
         isPurchase  : false,
         isFreeSpin  : false,
         fsCount  : -1,
         purCount : -1,
-        fpSpinsRemaining : 40,
-        fsSpinsRemaining : 0,
+        purRemaining : 40,
+        fsRemain : 0,
         fspSpinsRemaining : 5,
         fsAwarded : 0,
+
         isChoose    : false,
         chooseTime  : 0,
         spinsRemaining  : 10,
@@ -46,6 +48,7 @@ export const addUser = async( newUser:any ) => {
         symbolWins  : [] as any[],
         spinMatches : [] as number[],
         gameMatches : [] as number[],
+        matchedIdxs : [] as number[],
         matchPatterns   : [] as number[],
 
         jokerCells  : [] as number[],
@@ -78,8 +81,8 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                     isFreeSpin  : userInfo.gameStatus.isFreeSpin,
                     fsCount  : userInfo.gameStatus.fsCount,
                     purCount     : userInfo.gameStatus.purCount,
-                    fpSpinsRemaining : userInfo.gameStatus.fpSpinsRemaining,
-                    fsSpinsRemaining : userInfo.gameStatus.fsSpinsRemaining,
+                    purRemaining : userInfo.gameStatus.purRemaining,
+                    fsRemain : userInfo.gameStatus.fsRemain,
                     fspSpinsRemaining : userInfo.gameStatus.fspSpinsRemaining,
                     fsAwarded   : userInfo.gameStatus.fsAwarded,
 
@@ -96,6 +99,7 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                     symbolWins : userInfo.gameStatus.symbolWins,
                     spinMatches : userInfo.gameStatus.spinMatches,
                     gameMatches : userInfo.gameStatus.gameMatches,
+                    matchedIdxs : userInfo.gameStatus.matchedIdxs,
                     matchPatterns   : userInfo.gameStatus.matchPatterns,
 
                     jokerCells  : userInfo.gameStatus.jokerCells,

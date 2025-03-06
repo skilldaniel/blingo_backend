@@ -12,222 +12,16 @@ export const blingoService = {
         const userInfo = await Models.getUserInfo( token );
         if(userInfo === null) return Constants.ERRORDESCRIPTION[ 6 ];
         const action = actionParams.action;
+        console.log(`---------> action::${ action } --------->`);
         const rtp = 1;
-
-        console.log(`----------> action :: ${ action } ---------->`);
-        let winSymbol = 0;
+        const _PG="PG", _RJ="RJ", _SJ="SJ", _J="J", _FS="FS", _D="D";
+        
         let actionFlag = 0; // 0::SPIN, 1::CHOOSE_CELL, 2::COMPLETE, 3::NONE
-        let totalSymbolWin = 0, chosenCellIdx = -1, bonusProfit = 0;;
-        let symbolWinsInfo : Types.SymbolWinsType[] = [];
-        let purpleGemIndexes : number[] = [];
-        let superJokerIndexes: number[] = [];
-        let freeSpinIndexes: number[] = [];
-        let superJokerCells: number[] = [];
-        let endGame = false;
-        let isExtra = false;
+        let winSymbol = 0, totalSymbolWin = 0, bonusProfit = 0;;
+
         let response = {};
         let bonusReelInfo : any = {};
 
-        let slingoWinInfo = {
-            patterns : [] as number[],
-            patternInfo : [] as any[]
-        };
-        
-        if( action === "spin" || action === "chooseCell" ) {
-            let matches : number[] = [];
-            if( action === "spin" ) {
-                let isJoker = false;
-                let isPG = false;
-                let pgCnt = 0;
-                const gameMatches: number[] = [];
-                userInfo.gameStatus.gameMatches.forEach(( num:number ) => {
-                    gameMatches.push( userInfo.gameStatus.cells[num] );
-                })
-                if( userInfo.cheat.isCheat ) {
-                    if( userInfo.cheat.cid>=userInfo.cheat.symbols.length ) {
-                        userInfo.gameStatus.symbols = Functions.getEmptySymbols( userInfo.gameStatus.cells );
-                    } else {
-                        userInfo.gameStatus.symbols = userInfo.cheat.symbols[ userInfo.cheat.cid ];
-                        userInfo.cheat.cid++;
-                    }
-                } else {
-                    const symParam: any = {
-                        cells : userInfo.gameStatus.cells,
-                        purCount : userInfo.gameStatus.purCount,
-                        gameMatches : gameMatches,
-                    };
-                    userInfo.gameStatus.symbols = Functions.getSymbols( symParam );
-                    // if( ratio<( rtps[rtp-1]+0.02 ) ) {
-                    //     const symParam: any = {
-                    //         cells : userInfo.gameStatus.cells,
-                    //         gameMatches : gameMatches
-                    //     };
-                    //     userInfo.gameStatus.symbols = Functions.getSymbols( symParam );
-                    // } else {
-                    //     userInfo.gameStatus.symbols = Functions.getEmptySymbols( userInfo.gameStatus.cells );
-                    // }
-                }
-
-                if( userInfo.gameStatus.spinsRemaining===0 ) {
-                    if( !userInfo.gameStatus.isPurchase && userInfo.gameStatus.purCount === -1 ) userInfo.gameStatus.isPurchase = true;
-                    userInfo.gameStatus.purCount++;
-                    if( userInfo.gameStatus.purCount===1 ) userInfo.gameStatus.fspSpinsRemaining--;
-                    else if( userInfo.gameStatus.purCount>1 && !userInfo.gameStatus.isExtra ) userInfo.gameStatus.fpSpinsRemaining--;
-                }
-
-                if( userInfo.gameStatus.purCount===1 || userInfo.gameStatus.isExtra ) {
-                    isExtra = userInfo.gameStatus.symbols.some( (num:any) => userInfo.gameStatus.cells.includes(num) );
-                    if( !isExtra ) {
-                        userInfo.gameStatus.symbols.length = 0;
-                    } else {
-                        userInfo.gameStatus.purCount=1;
-                    }
-                }
-                
-                userInfo.gameStatus.symbols.forEach(( symbol:string, idx:number) => {
-                    if( symbol === "RJ" || symbol === "J" ) {
-                        for( let i = 0; i<5; i++ ) {
-                            if( !userInfo.gameStatus.gameMatches.includes( 5*i+idx ) && !isJoker ) {
-                                isJoker = true;
-                                break;
-                            }
-                        }
-                    }
-                })
-                if( isJoker ) {
-                    actionFlag = 1;
-                    userInfo.gameStatus.isChoose = true;
-                }
-                if( userInfo.gameStatus.symbols.includes("PG") ) isPG = true;
-                userInfo.gameStatus.symbols.forEach(( symbol:string, idx:number) => {
-                    if( isNaN(parseFloat(symbol)) ) {
-                        switch (symbol) {
-                            case "J":
-                            case "RJ":
-                                if( isJoker ) {
-                                    const isRow = Functions.checkRowCells( userInfo.gameStatus.gameMatches, idx );
-                                    if( isRow===true ) userInfo.gameStatus.chooseTime++;
-                                    userInfo.gameStatus.cells.forEach(( cell:number, ind:number ) => {
-                                        if( ind%5 === idx && !userInfo.gameStatus.gameMatches.includes( ind ) ) {
-                                            if( !userInfo.gameStatus.jokerIndexes.includes( idx ) ) userInfo.gameStatus.jokerIndexes.push( idx );
-                                            userInfo.gameStatus.jokerCells.push( cell );
-                                        }
-                                    });
-                                }
-                                if( symbol==="RJ" && isPG ) purpleGemIndexes.push(idx), pgCnt++;
-                                break;
-                            case "PG":
-                                pgCnt++;
-                                if( !purpleGemIndexes.includes( idx ) ) purpleGemIndexes.push( idx );
-                                break;
-                            case "SJ": 
-                                if( !superJokerIndexes.includes( idx ) ) {
-                                    actionFlag = 1
-                                    userInfo.gameStatus.cells.forEach(( cell:number, ind:number ) => {
-                                        if( !userInfo.gameStatus.gameMatches.includes( ind ) ) {
-                                            superJokerCells.push( cell );
-                                        }
-                                    });
-                                    superJokerIndexes.push( idx );
-                                }
-                                break;
-                            case "FS":
-                                userInfo.gameStatus.spinsRemaining += 1;
-                                userInfo.gameStatus.isFreeSpin = true;
-                                userInfo.gameStatus.fsSpinsRemaining = 1;
-                                userInfo.gameStatus.fsAwarded = 1;
-                                freeSpinIndexes.push( idx );
-                                break;
-                        }
-                    }
-                })
-                if( isPG && pgCnt>=3 ) {
-                    totalSymbolWin = Math.round( totalSymbolWin*100 + Constants.PAYTABLE[100][5-pgCnt]*userInfo.gameStatus.stake*100 )/100;
-                    userInfo.gameStatus.totalSymbolWin = Math.round( userInfo.gameStatus.totalSymbolWin*100+totalSymbolWin*100 )/100;
-                    userInfo.gameStatus.totalWin = Math.round( userInfo.gameStatus.totalWin*100+totalSymbolWin*100 )/100;
-                    const symbolWinItem : Types.SymbolWinsType = {
-                        symbols : 3,
-                        amount : totalSymbolWin,
-                        type : Constants.SYMBOLDICT[100]
-                    };
-                    userInfo.gameStatus.symbolWins.push( symbolWinItem );
-                    symbolWinsInfo.push( symbolWinItem );
-                }
-                userInfo.gameStatus.spinMatches.length = 0;
-
-                matches = Functions.getIdxMatchedSymbol( userInfo.gameStatus.cells, userInfo.gameStatus.symbols );
-                if( matches.length>0 ) {
-                    matches.forEach((matchPos:number) => {
-                        if( !userInfo.gameStatus.gameMatches.includes( matchPos ) ) {
-                            if( superJokerCells.length>0 ) {
-                                superJokerCells = superJokerCells.filter( num=>num!=userInfo.gameStatus.cells[ matchPos ] );
-                            }
-                            if( userInfo.gameStatus.jokerCells.length>0 ) {
-                                userInfo.gameStatus.jokerCells = userInfo.gameStatus.jokerCells.filter( (num:number)=>num!=userInfo.gameStatus.cells[ matchPos ] );
-                            }
-                            userInfo.gameStatus.gameMatches.push( matchPos );
-                            userInfo.gameStatus.spinMatches.push( matchPos );
-                        }
-                    });
-
-                }
-            }
-            if( action==="chooseCell" ) {
-                chosenCellIdx = userInfo.gameStatus.cells.indexOf( actionParams.body.cellNumber );
-                if( !userInfo.gameStatus.gameMatches.includes( chosenCellIdx ) ) {
-                    userInfo.gameStatus.gameMatches.push( chosenCellIdx );
-                    userInfo.gameStatus.spinMatches.push( chosenCellIdx );
-                }
-            }
-
-            if( userInfo.gameStatus.spinMatches.length>0 ) {
-                slingoWinInfo = Functions.checkSlingoWinLines( userInfo.gameStatus.matchPatterns, userInfo.gameStatus.gameMatches, userInfo.gameStatus.spinMatches );
-                if( slingoWinInfo.patterns.length>0 ) {
-                    userInfo.gameStatus.matchPatterns = new Set([ ...userInfo.gameStatus.matchPatterns, ...slingoWinInfo.patterns ]) ;
-                    userInfo.gameStatus.matchPatterns = Array.from( userInfo.gameStatus.matchPatterns );
-                }
-            }
-            if( userInfo.gameStatus.purCount >= 1 ) { // 0
-                const priceParams: any = {
-                    rtp : 1,
-                    stake : userInfo.gameStatus.stake,
-                    totalMatches : userInfo.gameStatus.gameMatches,
-                    patternLength : userInfo.gameStatus.matchPatterns.length,
-                }
-
-                userInfo.gameStatus.fsStake = Functions.calcSpinPrice( priceParams );
-            }
-        }
-        if( userInfo.gameStatus.gameMatches.length===25 ) {
-            endGame = true;
-            winSymbol = 12;
-        } else if( userInfo.gameStatus.fpSpinsRemaining===0 ) {
-            endGame = true;
-            winSymbol = userInfo.gameStatus.matchPatterns.length;
-        }
-        if( endGame ) {
-            actionFlag = 2;
-            const bsParams = {
-                winSymbol : winSymbol,
-                stake : userInfo.gameStatus.stake
-            }
-            if( winSymbol>2 ) {
-                bonusReelInfo = Functions.generateBonusSpins( bsParams );
-                bonusProfit = bonusReelInfo.bonusProfit;
-                // console.log(`---> inc balance case 1`, userInfo.gameStatus);
-                userInfo.balance = Math.round( userInfo.balance*100+userInfo.gameStatus.totalSymbolWin*100+bonusProfit*100 )/100;
-            } else {
-                actionFlag = 4;
-            }
-            userInfo.gameStatus.chooseTime=-1;
-            userInfo.gameStatus.isChoose=false;
-            if( userInfo.cheat.isCheat ) {
-                userInfo.cheat.isCheat = false;
-                userInfo.cheat.cid = 0;
-                userInfo.cheat.cells.length = 0;
-                userInfo.cheat.symbols.length = 0;
-            }
-        }
         switch ( action ) {
             case "currentGame" :
                 const cellInfo = Functions.getCells();
@@ -237,8 +31,9 @@ export const blingoService = {
                 userInfo.gameStatus.isPurchase = false;
                 userInfo.gameStatus.isFreeSpin = false;
                 userInfo.gameStatus.purCount = -1;
-                userInfo.gameStatus.fpSpinsRemaining = 40;
-                userInfo.gameStatus.fspSpinsRemaining = 5;
+                userInfo.gameStatus.purRemaining = 40;
+                userInfo.gameStatus.fsRemain = 0;
+                userInfo.gameStatus.fpsSpinsRemaining = 5;
                 userInfo.gameStatus.isChoose = false;
                 userInfo.gameStatus.chooseTime = 0;
                 userInfo.gameStatus.spinsRemaining = 10;
@@ -281,113 +76,189 @@ export const blingoService = {
                 await Models.updateUserBalance( userInfo.token, userInfo.balance );
                 break;
             case "spin" :
-                const spinParams = {
-                    actionFlag  : actionFlag,
-                    userId      : actionParams.body.userId,
-                    patternInfo : slingoWinInfo.patternInfo,
-                    bonusReelInfo : bonusReelInfo,
-                    bonusProfit : bonusProfit,
-                    gameInstanceId  : actionParams.body.gameInstanceId,
-                    symbolWinsInfo  : symbolWinsInfo,
-                    spinSymbolWin   : totalSymbolWin,
-                    purpleGemIndexes: purpleGemIndexes,
-                    freeSpinIndexes: freeSpinIndexes,
-                    superJokerIndexes: superJokerIndexes,
-                    superJokerCells : superJokerCells,
-                    spinPrice   : userInfo.gameStatus.purCount >= 0 ? userInfo.gameStatus.fsStake : 0,
-                    balance     : userInfo.balance,
-                    currency    : userInfo.property.currency,
-                    gameInfo    : userInfo.gameStatus,
-                    matchPatterns   : userInfo.gameStatus.matchPatterns.length,
-                };
-                response = Functions.generateSpinResponse( spinParams );
-                
-                if( !isExtra ) userInfo.gameStatus.isExtra = false;
-                else userInfo.gameStatus.isExtra = true;
-
-                if( userInfo.gameStatus.purCount>=1 ) {
-                    if( actionFlag === 0 ) {
-                        if( userInfo.balance<userInfo.gameStatus.fsStake ) {
-                            console.log('insuffcient balance');
-                            return "insuffcient balance";
-                        } else {
-                            userInfo.gameStatus.totalStake = Math.round( userInfo.gameStatus.totalStake*100+userInfo.gameStatus.fsStake*100 ) / 100;
-                            // console.log(`---> dec balance case 1 -`, userInfo.gameStatus.fsStake);
-                            userInfo.balance = Math.round( userInfo.balance*100-userInfo.gameStatus.fsStake*100 )/100;
-                            totalStake = Math.round( totalStake*100 + userInfo.gameStatus.fsStake*100 ) / 100;
-                            ratio = Math.round( totalProfit*100/totalStake ) / 100;
-                        }
-                    }
-                    await Models.updateUserBalance( userInfo.token, userInfo.balance )
-                }
-                if( userInfo.gameStatus.spinsRemaining > 0 ) userInfo.gameStatus.spinsRemaining--;
-                break;
             case "chooseCell" :
-                userInfo.gameStatus.chooseTime--;
-                if( userInfo.gameStatus.chooseTime>0 ) {
-                    actionFlag = 1;
-                    userInfo.gameStatus.jokerIndexes = userInfo.gameStatus.jokerIndexes.filter((jId:number) => jId !== chosenCellIdx%5 );
-                    if( userInfo.gameStatus.jokerIndexes.length===0 ) {
-                        userInfo.gameStatus.chooseTime = -1;
-                    } else {
-                        userInfo.gameStatus.cells.forEach( ( cell:number, idx:number ) => {
-                            if( idx%5 === chosenCellIdx%5 ) {
-                                userInfo.gameStatus.jokerCells = userInfo.gameStatus.jokerCells.filter((jokerCell:number) => jokerCell !== cell );
+                let symbolWinsInfo : Types.SymbolWinsType[] = [];
+                let fsIndexes: number[] = [];
+                let matches : number[] = [];
+                let pgIndexes: number[] = [];
+                let rsIndexes: number[] = [];
+                let sjCells: number[] = [];
+                let sjIndexes: number[] = [];
+                let symbolWins: number[] = [];
+                
+                let isExtra = false;
+
+                let slingoWinInfo = {
+                    patterns : [] as number[],
+                    patternInfo : [] as any[]
+                };
+
+                if( action==="spin" ) {
+                    const symParam: any = {
+                        cells : userInfo.gameStatus.cells,
+                        purCount : userInfo.gameStatus.purCount,
+                        gameMatches : [],
+                        isExtra: userInfo.gameStatus.isExtra
+                    };
+                    const symbols = Functions.getSymbols( symParam );
+                    const _hasJ = symbols.includes(_J);
+                    const _hasFS = symbols.includes(_FS);
+                    const _hasSJ = symbols.includes(_SJ);
+                    const _hasRJ = symbols.includes(_RJ);
+                    const _hasPG = symbols.includes(_PG);
+                    const _hasD = symbols.includes(_D);
+                    
+                    let pgCnt = 0;
+                    userInfo.gameStatus.symbols = symbols;
+                    if( userInfo.gameStatus.spinsRemaining>=0 ) userInfo.gameStatus.spinsRemaining--;
+                    console.log(`spinsRemaining`, userInfo.gameStatus.spinsRemaining, userInfo.gameStatus.fsRemain )
+                    matches = Functions.getIdxMatchedSymbol( userInfo.gameStatus.cells, symbols );
+                    if( matches.length>0 ) {
+                        matches.forEach(( symb ) => {
+                            if( !userInfo.gameStatus.gameMatches.includes( symb )) {
+                                userInfo.gameStatus.gameMatches.push( symb );
+                                userInfo.gameStatus.spinMatches.push( symb );
+                                userInfo.gameStatus.matchedIdxs.push( userInfo.gameStatus.cells.indexOf( symb ));
                             }
                         })
+                        console.log(`gameMatches=[${userInfo.gameStatus.gameMatches}]`);
                     }
-                } else {
-                    actionFlag = 0;
-                    userInfo.gameStatus.isChoose = false;
-                    userInfo.gameStatus.jokerCells.length = 0;
-                    userInfo.gameStatus.jokerIndexes.length = 0;
-                }
-                if( userInfo.gameStatus.gameMatches.includes( chosenCellIdx ) ) {
-                    if( userInfo.gameStatus.matchPatterns.length===12  ) {
-                        winSymbol = 12;
-                        actionFlag = 2;
-                        const bsParams = {
-                            winSymbol : 12,
-                            stake : userInfo.gameStatus.stake
-                        }
-                        bonusReelInfo = Functions.generateBonusSpins( bsParams );
-                        userInfo.gameStatus.chooseTime=-1;
-                        bonusProfit = bonusReelInfo.bonusProfit;
+                    
+                    if( _hasFS ) {
+                        symbols.forEach((symb, idx) => {
+                            if( symb===_FS ) {
+                                fsIndexes.push( idx );
+                                userInfo.gameStatus.fsRemain++;
+                            }
+                        })
+                        userInfo.gameStatus.fsAwarded = 1;
                     }
-
-                    const chooseParams = {
+                    if( _hasJ ) {
+                        symbols.forEach((symb, idx) => {
+                            if( symb===_J && Functions.checkRowCells( userInfo.gameStatus.matchedIdxs, idx )) {
+                                userInfo.gameStatus.chooseTime++;
+                                userInfo.gameStatus.jokerIndexes.push( idx );
+                                userInfo.gameStatus.cells.forEach(( cell:number, ind:number ) => {
+                                    if( ind%5===idx && !userInfo.gameStatus.gameMatches.includes(cell)) {
+                                        userInfo.gameStatus.jokerCells.push( cell );
+                                    }
+                                })
+                            }
+                        })
+                        actionFlag = 1;
+                    }
+                    if( _hasSJ ) {
+                        symbols.forEach((symb, idx) => {
+                            if( symb===_SJ && Functions.checkRowCells( userInfo.gameStatus.matchedIdxs, idx ) ) {
+                                userInfo.gameStatus.chooseTime++;
+                                sjIndexes.push( idx );
+                            }
+                        })
+                        userInfo.gameStatus.cells.forEach(( sym:number ) => {
+                            if( !userInfo.gameStatus.gameMatches.includes( sym )) {
+                                sjCells.push( sym );
+                            }
+                        })
+                        actionFlag = 1;
+                    }
+                    if( _hasRJ ) {
+                        symbols.forEach((symb, idx) => {
+                            if( symb===_RJ && Functions.checkRowCells( userInfo.gameStatus.matchedIdxs, idx )) {
+                                rsIndexes.push( idx );
+                            }
+                        })
+                        actionFlag = 1;
+                    }
+                    if( _hasPG ) {
+                        symbols.forEach((symb, idx) => {
+                            if( symb===_PG ) pgIndexes.push( idx );
+                        })
+                        pgIndexes.push( ...rsIndexes );
+                        pgCnt = pgIndexes.length;
+                    }
+                    if( matches.length>0 ) {
+                        matches.forEach((matchPos:number) => {
+                            if( !userInfo.gameStatus.gameMatches.includes( matchPos ) ) {
+                                if( _hasSJ ) {
+                                    sjCells = sjCells.filter( num=>num!=userInfo.gameStatus.cells[ matchPos ] );
+                                }
+                                if( userInfo.gameStatus.jokerCells.length>0 ) {
+                                    userInfo.gameStatus.jokerCells = userInfo.gameStatus.jokerCells.filter( (num:number)=>num!=userInfo.gameStatus.cells[ matchPos ] );
+                                }
+                                userInfo.gameStatus.gameMatches.push( matchPos );
+                                userInfo.gameStatus.spinMatches.push( matchPos );
+                            }
+                        });
+                    }
+                    const spinParams = {
                         actionFlag  : actionFlag,
                         userId      : actionParams.body.userId,
-                        spinSymbolWin   : totalSymbolWin,
-                        gameInstanceId  : actionParams.body.gameInstanceId,
+                        patternInfo : slingoWinInfo.patternInfo,
                         bonusReelInfo : bonusReelInfo,
+                        bonusProfit : bonusProfit,
+                        gameInstanceId  : actionParams.body.gameInstanceId,
                         symbolWinsInfo  : symbolWinsInfo,
-                        purpleGemIndexes: purpleGemIndexes,
-                        patternInfo   : slingoWinInfo.patternInfo,
-                        superJokerIndexes: superJokerIndexes,
-                        superJokerCells : superJokerCells,
+                        spinSymbolWin   : totalSymbolWin,
+                        purpleGemIndexes: pgIndexes,
+                        freeSpinIndexes: fsIndexes,
+                        superJokerIndexes: sjIndexes,
+                        superJokerCells : sjCells,
+                        spinPrice   : userInfo.gameStatus.purCount >= 0 ? userInfo.gameStatus.fsStake : 0,
                         balance     : userInfo.balance,
                         currency    : userInfo.property.currency,
-                        spinPrice   : userInfo.gameStatus.purCount > 0 ? userInfo.gameStatus.fsStake : 0,
-                        matchPatterns : userInfo.gameStatus.matchPatterns.length,
-                        bonusProfit : actionFlag===2 ? bonusProfit : 0,
                         gameInfo    : userInfo.gameStatus,
-                    };
-                    response = Functions.generateChooseCellResponse( chooseParams );
-                    if( userInfo.gameStatus.matchPatterns.length===12  ) {
-                        console.log(`---> inc balance case 2-`, bonusProfit);
-                        userInfo.balance = Math.round( userInfo.balance*100 + bonusProfit*100 ) / 100;
-                        await Models.updateUserBalance( userInfo.token, userInfo.balance );
+                        matchPatterns   : userInfo.gameStatus.matchPatterns.length,
+                        isExtra : isExtra
+                    }
+                    response = Functions.generateSpinResponse( spinParams );
+                    if( userInfo.gameStatus.spinsRemaining===0 && userInfo.gameStatus.fsRemain>0 ) {
+                        userInfo.gameStatus.fsRemain--;
                     }
                 }
-                if( userInfo.gameStatus.purCount>=1 ) {
-                    console.log(`---> dec balance case 2 -`, userInfo.gameStatus.fsStake );
-                    userInfo.gameStatus.totalStake = Math.round( userInfo.gameStatus.totalStake*100+userInfo.gameStatus.fsStake*100 ) / 100;
-                    userInfo.balance = Math.round( userInfo.balance*100-userInfo.gameStatus.fsStake*100 )/100;
-                    await Models.updateUserBalance( userInfo.token, userInfo.balance )
-                    totalStake = Math.round( totalStake*100+userInfo.gameStatus.fsStake*100 ) / 100;
-                    ratio = Math.round( totalProfit*100/totalStake ) / 100;
+                if( action==="chooseCell" ) {
+                    if( userInfo.gameStatus.chooseTime>0 ) {
+                        const chosenCell = actionParams.body.cellNumber;
+                        const chosenIdx = userInfo.gameStatus.cells.indexOf( chosenCell );
+                        if( !userInfo.gameStatus.gameMatches.includes(chosenCell)) {
+                            userInfo.gameStatus.gameMatches.push( chosenCell );
+                            userInfo.gameStatus.spinMatches.push( chosenCell );
+                        }
+                        if( userInfo.gameStatus.symbols[chosenIdx]===_J ) {
+                            userInfo.gameStatus.jokerIndexes = userInfo.gameStatus.jokerIndexes.filter(( idx:number ) => idx !== chosenIdx );
+                            userInfo.gameStatus.jokerCells.forEach(( cell:number ) => {
+                                if( userInfo.gameStatus.cells.indexOf( cell )%5===chosenIdx ) {
+                                    userInfo.gameStatus.jokerCells = userInfo.gameStatus.jokerCells.filter(( idx:number ) => idx!==cell );
+                                }
+                            })
+                        }
+
+                        const chooseParams = {
+                            actionFlag  : actionFlag,
+                            userId      : actionParams.body.userId,
+                            spinSymbolWin   : totalSymbolWin,
+                            gameInstanceId  : actionParams.body.gameInstanceId,
+                            bonusReelInfo : bonusReelInfo,
+                            symbolWinsInfo  : symbolWinsInfo,
+                            purpleGemIndexes: pgIndexes,
+                            freeSpinIndexes : [],
+                            patternInfo   : slingoWinInfo.patternInfo,
+                            superJokerIndexes: sjIndexes,
+                            superJokerCells : sjCells,
+                            balance     : userInfo.balance,
+                            currency    : userInfo.property.currency,
+                            spinPrice   : userInfo.gameStatus.purCount > 0 ? userInfo.gameStatus.fsStake : 0,
+                            matchPatterns : userInfo.gameStatus.matchPatterns.length,
+                            bonusProfit : actionFlag===2 ? bonusProfit : 0,
+                            gameInfo    : userInfo.gameStatus,
+                        };
+                        response = Functions.generateChooseCellResponse( chooseParams );
+                        userInfo.gameStatus.chooseTime--;
+                    }
                 }
+                if( userInfo.gameStatus.chooseTime===0 ) {
+                    userInfo.gameStatus.spinMatches.length = 0;
+                }
+    
                 break;
             case "collect" :
                 if( userInfo.gameStatus.matchPatterns.length>2 && actionFlag !== 2 ) {
@@ -428,8 +299,8 @@ export const blingoService = {
                 userInfo.gameStatus.totalStake = 0;
                 userInfo.gameStatus.isPurchase = false;
                 userInfo.gameStatus.purCount = -1;
-                userInfo.gameStatus.fpSpinsRemaining = -1;
-                userInfo.gameStatus.fspSpinsRemaining = 5;
+                userInfo.gameStatus.purRemaining = -1;
+                userInfo.gameStatus.fpsSpinsRemaining = 5;
                 userInfo.gameStatus.isChoose = false;
                 userInfo.gameStatus.spinsRemaining = 10;
                 userInfo.gameStatus.totalWin = 10;
