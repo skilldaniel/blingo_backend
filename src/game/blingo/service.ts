@@ -111,7 +111,6 @@ export const blingoService = {
                     let pgCnt = 0;
                     userInfo.gameStatus.symbols = symbols;
                     if( userInfo.gameStatus.spinsRemaining>=0 ) userInfo.gameStatus.spinsRemaining--;
-                    console.log(`spinsRemaining`, userInfo.gameStatus.spinsRemaining, userInfo.gameStatus.fsRemain )
                     matches = Functions.getIdxMatchedSymbol( userInfo.gameStatus.cells, symbols );
                     if( matches.length>0 ) {
                         matches.forEach(( symb ) => {
@@ -190,6 +189,11 @@ export const blingoService = {
                             }
                         });
                     }
+                    if( userInfo.gameStatus.isPurchase ) {
+                        userInfo.gameStatus.fspSpinsRemaining--;
+                    }
+                    console.log(`spinRemain`, userInfo.gameStatus.spinsRemaining, userInfo.gameStatus.fsRemain, `symbols=[${symbols}]`);
+
                     const spinParams = {
                         actionFlag  : actionFlag,
                         userId      : actionParams.body.userId,
@@ -211,8 +215,11 @@ export const blingoService = {
                         isExtra : isExtra
                     }
                     response = Functions.generateSpinResponse( spinParams );
-                    if( userInfo.gameStatus.spinsRemaining===0 && userInfo.gameStatus.fsRemain>0 ) {
-                        userInfo.gameStatus.fsRemain--;
+                    if( userInfo.gameStatus.spinsRemaining<0 ) {
+                        if( userInfo.gameStatus.fsRemain>0 ) userInfo.gameStatus.fsRemain--;
+                        if( userInfo.gameStatus.fsRemain===0 ) {
+                            userInfo.gameStatus.isPurchase = true;
+                        }
                     }
                 }
                 if( action==="chooseCell" ) {

@@ -1,6 +1,7 @@
 import isaac from 'isaac';
 import * as GlobalConstants from "@/game/blingo/constants";
 import { stat } from 'node:fs';
+import { userInfo } from 'node:os';
 
 const getFloorRandom = ( len:number, flag="i" ) => {
     if( flag==="m ") return Math.floor( Math.random()*len );
@@ -170,8 +171,8 @@ export const getSymbols = ( params:any ) => {
         }
     }
     const ftSymbols = [
-        ["5", "PG", "44", "55", "75"], ["13", "26", "SJ", "51", "61"],["12", "29", "35", "47", "74"],["2", "18", "32", "58", "70"],["7", "PG", "44", "50", "71"],["6", "23", "FS", "55", "74"],["12", "24", "37", "54", "SJ"],["11", "20", "38", "47", "62"],["J", "16", "43", "60", "74"],["12", "PG", "44", "47", "63"],["5", "18", "D", "50", "67"]
-        // ,["12", "PG", "D", "60", "61"],[],["11", "16", "39", "52", "64"]
+        ["5", "PG", "44", "55", "75"], ["13", "26", "SJ", "51", "61"],["12", "29", "35", "47", "74"],["2", "18", "32", "58", "70"],["7", "PG", "44", "50", "71"],["6", "23", "FS", "55", "74"],["12", "24", "37", "54", "SJ"],["11", "20", "38", "47", "62"],["J", "16", "43", "60", "74"],["12", "PG", "44", "47", "63"],["5", "18", "D", "50", "67"],["12", "PG", "D", "60", "61"], []
+        // ,["11", "16", "39", "52", "64"]
     ];
     symbols = ftSymbols[ ftid ];
     ftid++;
@@ -400,9 +401,17 @@ const generateGameResponse = ( params: any ) => {
     const hasPattern = matches.some(match => match.pattern.length > 0);
     let removeMatches: any[] = hasPattern ? removeRepatedPatterns( matches ) : [];
     let state = 0, spinType = 0;
-    if( gameInfo.spinsRemaining===0 && gameInfo.fsRemain>0 ) {
-        state = 1;
+    if( gameInfo.spinsRemaining<=0 ) {
+        if( gameInfo.fsRemain>0 ) {
+            state = 1;
+        } else if( gameInfo.fsRemain===0 ) {
+            state = 2, spinType = 3;
+            // if( gameInfo.isPurchase ) {
+            //     state = 2, spinType = 1;
+            // }
+        }
     }
+
     const response = {
         game: {
             userId: params.userId,
@@ -417,7 +426,7 @@ const generateGameResponse = ( params: any ) => {
             freePurchaseSpinsRemaining: gameInfo.fspSpinsRemaining,
             purchaseSpinsRemaining: gameInfo.purRemaining,
             freeSpinsAwarded: gameInfo.fsAwarded,
-            freePurchaseSpinsAwarded: gameInfo.purCount > 0 ? 1 : 0,
+            freePurchaseSpinsAwarded: 5-gameInfo.fspSpinsRemaining ,
             spin: {
                 type: GlobalConstants.SPINTYPES[ spinType ],
                 symbols: gameInfo.symbols,
