@@ -219,7 +219,7 @@ export const blingoService = {
                             }
                         });
                     }
-                    console.log(`spinRemain`, userInfo.gameStatus.spinsRemaining, userInfo.gameStatus.fsRemain, `symbols=[${symbols}]`);
+                    console.log(`-->>>-- spinRemain`, userInfo.gameStatus.spinsRemaining, userInfo.gameStatus.fsRemain, `symbols=[${symbols}]`);
                 }
                 if( action==="chooseCell" ) {
                     if( userInfo.gameStatus.chooseTime>0 ) {
