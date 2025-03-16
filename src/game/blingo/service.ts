@@ -286,21 +286,32 @@ export const blingoService = {
                 }
                 if( action==="spin" ) {
                     let endExtra = false;
-                    // console.log(`spinsRemaining=${userInfo.gameStatus.spinsRemaining}`)
-                    if( !userInfo.gameStatus.isPurchase && userInfo.gameStatus.spinsRemaining<0 && userInfo.gameStatus.fsRemain===0 ) {
-                        console.log(`>>>> here???`)
-                        userInfo.gameStatus.isExtra = true; // extra spin mode
-                        userInfo.gameStatus.fpsSpinsCnt++;
-                        if( userInfo.gameStatus.symbols.length===0 ) {
-                            endExtra = true;
-                            userInfo.gameStatus.fpsSpinsRemaining = 0;
-                            const priceParams: any = {
-                                rtp : 1,
-                                stake : userInfo.gameStatus.stake,
-                                totalMatches : userInfo.gameStatus.gameMatches,
-                                patternLength : userInfo.gameStatus.matchPatterns.length,
+                    if( !userInfo.gameStatus.isPurchase ) {
+                        if( userInfo.gameStatus.fsRemain===0 ) {
+                            if( userInfo.gameStatus.spinsRemaining<0 ) {
+                                userInfo.gameStatus.isFreeSpin = false;
+                                userInfo.gameStatus.isExtra = true; // extra spin mode
+                                userInfo.gameStatus.fpsSpinsCnt++;
+                                userInfo.gameStatus.fpsSpinsRemaining--;
+                                if( userInfo.gameStatus.symbols.length===0 ) {
+                                    endExtra = true;
+                                    userInfo.gameStatus.fpsSpinsRemaining = 0;
+                                    const priceParams: any = {
+                                        rtp : 1,
+                                        stake : userInfo.gameStatus.stake,
+                                        totalMatches : userInfo.gameStatus.gameMatches,
+                                        patternLength : userInfo.gameStatus.matchPatterns.length,
+                                    }
+                                    userInfo.gameStatus.fsStake = Functions.calcSpinPrice( priceParams );
+                                }
                             }
-                            userInfo.gameStatus.fsStake = Functions.calcSpinPrice( priceParams );
+                        } else if ( userInfo.gameStatus.fsRemain>0 ) {
+                            if( userInfo.gameStatus.spinsRemaining===0 ) {
+                                userInfo.gameStatus.isFreeSpin = true;
+                            }
+                            if( userInfo.gameStatus.isFreeSpin ) {
+                                userInfo.gameStatus.fsRemain--;
+                            }
                         }
                     }
                     if( userInfo.gameStatus.isPurchase ) {
@@ -335,11 +346,11 @@ export const blingoService = {
                     }
                     response = Functions.generateSpinResponse( spinParams );
                     if( userInfo.gameStatus.spinsRemaining<0 ) {
-                        if( userInfo.gameStatus.fsRemain>0 ) {
-                            userInfo.gameStatus.fsRemain--;
-                        } else if( endExtra ){
-                            userInfo.gameStatus.isExtra = false;
-                            userInfo.gameStatus.isPurchase = true;
+                        if( userInfo.gameStatus.fsRemain===0 ) {    
+                            if( endExtra ){
+                                userInfo.gameStatus.isExtra = false;
+                                userInfo.gameStatus.isPurchase = true;
+                            }
                         }
                     }
                     if( userInfo.gameStatus.isPurchase ) {

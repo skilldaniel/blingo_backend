@@ -413,23 +413,27 @@ const generateGameResponse = ( params: any ) => {
     let removeMatches: any[] = hasPattern ? removeRepatedPatterns( matches ) : [];
     let state = 0, spinType = 0;
 
-    if( gameInfo.spinsRemaining<0 ) {
-        if( gameInfo.fsAwarded===1 ) {
-            state = 1;
+    if( gameInfo.spinsRemaining<=0 ) {
+        if( gameInfo.spinsRemaining===0 ) {
+            if( gameInfo.fsAwarded===1 ) {
+                state = 2, spinType=3;
+            }
         } else {
-            console.log(`else case :: symbols=[${gameInfo.symbols}], isExtra=${gameInfo.isExtra}, isPurchase=${gameInfo.isPurchase}`)
-            if( gameInfo.isExtra ) {
-                state = 2, spinType = 1; // state = 3
+            if( !gameInfo.isFreeSpin ) {
+                console.log(`else case :: symbols=[${gameInfo.symbols}], isExtra=${gameInfo.isExtra}, isPurchase=${gameInfo.isPurchase}`)
+                if( gameInfo.isExtra ) {
+                    state = 2, spinType = 1; // state = 3
+                }
+                if( gameInfo.isPurchase ) {
+                    state = 3, spinType=2;
+                }
+                // if( params.isRS ) {
+                //     spinType = 4;
+                //     if( params.prevActionFlag===1 ) state = 2;
+                // } else {
+                //     state = 2;
+                // }
             }
-            if( gameInfo.isPurchase ) {
-                state = 3, spinType=2;
-            }
-            // if( params.isRS ) {
-            //     spinType = 4;
-            //     if( params.prevActionFlag===1 ) state = 2;
-            // } else {
-            //     state = 2;
-            // }
         }
     }
     if( params.isRS ) {
