@@ -57,6 +57,7 @@ export const addUser = async( newUser:any ) => {
         jokerCells  : [] as number[],
         jokerIndexes    : [] as number[],
         respinIndexes   : [] as number[],
+        pgIndexes   : [] as number[],
 
     };
     newUser.cheat = {
@@ -110,6 +111,7 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                     jokerCells  : userInfo.gameStatus.jokerCells,
                     jokerIndexes    : userInfo.gameStatus.jokerIndexes,
                     respinIndexes   : userInfo.gameStatus.respinIndexes,
+                    pgIndexes   : userInfo.gameStatus.pgIndexes,
 
                 },
                 cheat : {
