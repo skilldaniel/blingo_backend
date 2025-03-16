@@ -26,18 +26,20 @@ export const addUser = async( newUser:any ) => {
         fsStake : 0,
         totalStake  : 0,
         
-        isPurchase  : false,
+        isPurchase  : false, // purchase spin mode with spin price
         isFreeSpin  : false,
+        isExtra : false, // extra spin mode
         fsCount  : -1,
         purCount : -1,
-        purRemaining : 40,
-        fsRemain : 0,
-        fspSpinsRemaining : 5,
+        psRemaining : 40, // // purchaseSpinsRemaining
+        fsRemain : 0, // freeSpinsRemaining
+        fpsSpinsRemaining : 5, // freePurchaseSpinsRemaining
+        fpsSpinsCnt : 0, // freePurchaseSpinsAwarded
         fsAwarded : 0,
 
         isChoose    : false,
         chooseTime  : 0,
-        spinsRemaining  : 10,
+        spinsRemaining  : 10, // spinsRemaining
 
         totalWin : 0,
         totalSymbolWin  : 0,
@@ -46,16 +48,16 @@ export const addUser = async( newUser:any ) => {
         symbols : [] as number[],
         
         symbolWins  : [] as any[],
-        spinMatches : [] as number[],
         gameMatches : [] as number[],
         matchedIdxs : [] as number[],
+        spinMatches : [] as number[],
+        spinIdxs : [] as number[],
         matchPatterns   : [] as number[],
 
         jokerCells  : [] as number[],
         jokerIndexes    : [] as number[],
         respinIndexes   : [] as number[],
 
-        isExtra : false
     };
     newUser.cheat = {
         isCheat : false,
@@ -79,11 +81,13 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
 
                     isPurchase  : userInfo.gameStatus.isPurchase,
                     isFreeSpin  : userInfo.gameStatus.isFreeSpin,
+                    isExtra : userInfo.gameStatus.isExtra,
                     fsCount  : userInfo.gameStatus.fsCount,
                     purCount     : userInfo.gameStatus.purCount,
-                    purRemaining : userInfo.gameStatus.purRemaining,
+                    psRemaining : userInfo.gameStatus.psRemaining,
                     fsRemain : userInfo.gameStatus.fsRemain,
-                    fspSpinsRemaining : userInfo.gameStatus.fspSpinsRemaining,
+                    fpsSpinsRemaining : userInfo.gameStatus.fpsSpinsRemaining,
+                    fpsSpinsCnt : userInfo.gameStatus.fpsSpinsCnt,
                     fsAwarded   : userInfo.gameStatus.fsAwarded,
 
                     isChoose    : userInfo.gameStatus.isChoose,
@@ -97,16 +101,16 @@ export const updateUserInfo = async( token:string, userInfo:any ) => {
                     symbols     : userInfo.gameStatus.symbols,
                     
                     symbolWins : userInfo.gameStatus.symbolWins,
-                    spinMatches : userInfo.gameStatus.spinMatches,
                     gameMatches : userInfo.gameStatus.gameMatches,
                     matchedIdxs : userInfo.gameStatus.matchedIdxs,
+                    spinMatches : userInfo.gameStatus.spinMatches,
+                    spinIdxs : userInfo.gameStatus.spinIdxs,
                     matchPatterns   : userInfo.gameStatus.matchPatterns,
 
                     jokerCells  : userInfo.gameStatus.jokerCells,
                     jokerIndexes    : userInfo.gameStatus.jokerIndexes,
                     respinIndexes   : userInfo.gameStatus.respinIndexes,
 
-                    isExtra : userInfo.gameStatus.isExtra
                 },
                 cheat : {
                     isCheat : userInfo.cheat.isCheat,

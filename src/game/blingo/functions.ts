@@ -1,7 +1,6 @@
 import isaac from 'isaac';
 import * as GlobalConstants from "@/game/blingo/constants";
-import { stat } from 'node:fs';
-import { userInfo } from 'node:os';
+
 
 const getFloorRandom = ( len:number, flag="i" ) => {
     if( flag==="m ") return Math.floor( Math.random()*len );
@@ -32,13 +31,15 @@ export const getCurrentTime = () => {
 let round = 0;
 const maxVal = 75, wild = 12;
 
-const generateMatchePatterns = ( matchesArr:number[], patternInfo:any ) => {
+const generateMatchePatterns = ( cells:number[], matchesArr:number[], patternInfo:any ) => {
     const matches : any[] = [];
     if( matchesArr.length > 0 ) {
+        console.log(`matchesArr`, matchesArr);
+        console.log(`patternInfo`, patternInfo);
         matchesArr.forEach(( no:number, idx:number ) => {
             let pattern : number[] = [];
             patternInfo.forEach((element:any) => {
-                if( no === element.number ) {
+                if( no === cells[element.number] ) {
                     pattern.push( element.patterns );
                 }
             });
@@ -55,7 +56,9 @@ const generateMatchePatterns = ( matchesArr:number[], patternInfo:any ) => {
 export const getCells = () => {
     const subNumArr : number[][] = [];
     let remainCells : number[] = [];
-    let cells: number[] = [ 14,19,37,57,62,8,27,45,54,61,7,18,39,50,65,6,23,43,51,69,1,16,31,46,70 ];
+    let cells: number[] = [ 5,22,42,50,71,11,19,45,54,68,8,30,39,55,72,10,17,43,59,70,2,18,36,46,64 ];
+    cells = [ 4,26,40,60,61,14,25,35,53,65,3,19,36,51,74,8,18,45,46,75,15,27,37,50,68 ];
+    cells = [ 11,22,32,51,70,9,18,37,56,74,4,23,44,59,67,10,24,40,46,66,14,26,35,57,64 ];
     // for (let i = 0; i < 5; i++) {
     //     let start = i*15;
     //     let arr = Array.from({ length: 15 }, (_, index) => start + index+1);
@@ -130,7 +133,6 @@ export const getSymbols = ( params:any ) => {
                     if( specRand>0.834 ) symbols[ symbolPoss[i] ] = PG;
                     else if( specRand>0.782 ) symbols[ symbolPoss[i] ] = D;
                 } else {
-                    // console.log(`isExtra=${params.isExtra}`)
                     if( params.isExtra ) {
                         if( specRand>0.73) symbols[ symbolPoss[i] ] = PG;
                         else if( specRand>0.62 ) symbols[ symbolPoss[i] ] = D;
@@ -171,9 +173,11 @@ export const getSymbols = ( params:any ) => {
         }
     }
     const ftSymbols = [
-        ["5", "PG", "44", "55", "75"], ["13", "26", "SJ", "51", "61"],["12", "29", "35", "47", "74"],["2", "18", "32", "58", "70"],["7", "PG", "44", "50", "71"],["6", "23", "FS", "55", "74"],["12", "24", "37", "54", "SJ"],["11", "20", "38", "47", "62"],["J", "16", "43", "60", "74"],["12", "PG", "44", "47", "63"],["5", "18", "D", "50", "67"],["12", "PG", "D", "60", "61"], []
-        // ,["11", "16", "39", "52", "64"]
-    ];
+        // ["J", "18", "36", "56", "61"], ["13", "25", "41", "51", "63"],["3", "19", "D", "PG", "73"],["PG", "20", "42", "57", "71"],["D", "17", "D", "46", "70"],["5", "D", "35", "52", "71"],["7", "24", "44", "53", "PG"],["8", "17", "38", "59", "68"],["9", "27", "PG", "50", "73"],["13", "PG", "J", "RJ", "67"],["9", "19", "38", "RJ", "65"],[], ["1", "24", "31", "J", "73"], ["PG", "18", "38", "51", "67"], ["11", "18", "36", "57", "65"],["15", "PG", "D", "59", "62"],["12", "19", "33", "48", "J"],["J", "21", "34", "50", "75"],["14", "22", "38", "46", "SJ"],["14", "D", "43", "52", "71"],["12", "20", "37", "51", "67"], ["2", "28", "45", "PG", "66"],["11", "21", "42", "60", "70"],["J", "18", "44", "59", "64"], ["8", "25", "44", "54", "SJ"],["2", "16", "39", "49", "72"], ["1", "22", "PG", "58", "63"],["6", "24", "PG", "48", "74"],["14", "26", "43", "PG", "69"],["14", "18", "J", "PG", "62"],["6", "26", "D", "48", "69"],["2", "22", "42", "J", "71"],["14", "D", "43", "60", "PG"],["15", "20", "35", "PG", "63"],["2", "25", "34", "53", "70"],["PG", "25", "PG", "50", "75"],["J", "16", "D", "56", "65"], ["PG", "PG", "31", "54", "75"],["3", "25", "33", "54", "PG"],["J", "28", "J", "60", "PG"],["3", "PG", "J", "J", "69"],["13", "17", "43", "47", "69"],["8", "22", "41", "52", "74"],["9", "26", "38", "57", "72"],["3", "25", "42", "52", "68"],["5", "17", "39", "PG", "71"],["8", "D", "PG", "59", "71"],["12", "19", "PG", "51", "67"],["8", "18", "PG", "57", "62"],["4", "16", "45", "D", "66"],["14", "16", "41", "54", "62"]
+
+        // ["14", "PG", "PG", "46", "70"],["13", "25", "D", "51", "73"],["3", "28", "44", "47", "71"],["PG", "PG", "43", "59", "69"],["10", "24", "33", "J", "D"],["5", "22", "38", "56", "62"],["6", "PG", "D", "50", "PG"],["1", "26", "43", "51", "64"],["13", "28", "43", "49", "J"],["12", "D", "42", "58", "75"],["14", "27", "J", "54", "74"],[],["7", "26", "43", "60", "D"],["7", "19", "43", "47", "74"]
+        ["14", "20", "D", "58", "65"],["13", "28", "37", "60", "73"],["1", "29", "42", "48", "65"],["14", "22", "39", "53", "69"],["8", "24", "J", "57", "71"],["9", "28", "33", "J", "66"],["9", "22", "41", "52", "J"],["6", "23", "RJ", "60", "68"],["J", "J", "RJ", "J", "61"],["14", "PG", "31", "D", "69"],["PG", "21", "41", "57", "75"],[], ["6", "27", "J", "59", "67"],
+    ]; 
     symbols = ftSymbols[ ftid ];
     ftid++;
     return symbols;
@@ -196,34 +200,38 @@ export const checkRowCells = ( gameMatches:number[], row:number ) => {
 export const calcSpinPrice = ( params:any ) => {
     const rtps = [ 0.96, 0.94, 0.92 ];
     const remainCell = params.totalMatches.length;
-    const price = params.totalMatches.length===25 || params.patternLength===0 || params.patternLength===12 ? 0.01 : 
-                        Math.round( 100*params.stake*(maxVal-remainCell) / ((25-remainCell)*rtps[params.rtp-1]*(12-params.patternLength)) )/100;
+    const price = 
+        params.totalMatches.length===25 || params.patternLength===0 || params.patternLength===12 ? 0.01 : 
+        Math.round( 100*params.stake*(maxVal-remainCell) / ((25-remainCell)*rtps[params.rtp-1]*(12-params.patternLength)) )/100;
 
     console.log(`===> spinPrice ${price}=${ params.stake }*${(maxVal-remainCell)}/(${25-remainCell}*${rtps[ params.rtp-1 ]}*${ 12-params.patternLength }), length=${ remainCell }`);
     return price;
 }
 
-export const checkSlingoWinLines = ( matchedPatterns:number[], gameMatches:number[], spinMatches : number[] ) => {
-    const patterns  : number[] = [];
-    const patternInfo   : any[] = [];
-    if( gameMatches.length>=5 ) {
+export const checkSlingoWinLines = ( matchedPatterns:number[], matchedIdxs:number[], spinIdxs : number[] ) => {
+    const patterns : number[] = [];
+    const patternInfo : any[] = [];
+    if( matchedIdxs.length>=5 ) {
         let slingoWinLines: number[] = Object.keys( GlobalConstants.SLINGOWINLINES ).map(Number);
         if( matchedPatterns.length > 0 ) {
             slingoWinLines = slingoWinLines.filter(num=>!matchedPatterns.includes(Number(num)));
         }
         for( const key in GlobalConstants.SLINGOWINLINES ) {
-            if( slingoWinLines.includes(Number(key)) ) {
+            const lineKey = Number(key);
+            if( slingoWinLines.includes(lineKey)) {
                 const winLine = GlobalConstants.SLINGOWINLINES[key];
-                spinMatches.forEach(( idx:number ) => {
+                spinIdxs.forEach(( idx:number ) => {
                     if( winLine.includes( idx )) {
-                        const isPattern = winLine.every( element => gameMatches.includes(element) );
+                        const isPattern = winLine.every( element => matchedIdxs.includes(element) );
                         if( isPattern ) {
-                            patterns.push( Number(key) );
-                            const patternItem = {
-                                number : idx,
-                                patterns : Number(key)
-                            };
-                            patternInfo.push( patternItem );
+                            if( !patterns.includes( lineKey )) {
+                                patterns.push( lineKey );
+                                const patternItem = {
+                                    number : idx,
+                                    patterns : lineKey
+                                };
+                                patternInfo.push( patternItem );
+                            }
                         }
                     }
                 })
@@ -397,17 +405,26 @@ const generateTriggers = ( line:number, sameCnt:number ) => {
 
 const generateGameResponse = ( params: any ) => {
     const gameInfo = params.gameInfo;
-    const matches = generateMatchePatterns( gameInfo.spinMatches, params.patternInfo );
+    const matches = generateMatchePatterns( gameInfo.cells, gameInfo.spinMatches, params.patternInfo );
     const hasPattern = matches.some(match => match.pattern.length > 0);
     let removeMatches: any[] = hasPattern ? removeRepatedPatterns( matches ) : [];
     let state = 0, spinType = 0;
     if( gameInfo.spinsRemaining<=0 ) {
-        if( gameInfo.fsRemain>0 ) {
+        if( gameInfo.fsAwarded===1 ) {
             state = 1;
-        } else if( gameInfo.fsRemain===0 ) {
-            state = 2, spinType = 3;
-            // if( gameInfo.isPurchase ) {
-            //     state = 2, spinType = 1;
+        } else {
+            console.log(`else case :: symbols=[${gameInfo.symbols}], isExtra=${gameInfo.isExtra}, isPurchase=${gameInfo.isPurchase}`)
+            if( gameInfo.isExtra ) {
+                state = 3, spinType = 1;
+            }
+            if( gameInfo.isPurchase ) {
+                state = 3, spinType=2;
+            }
+            // if( params.isRS ) {
+            //     spinType = 4;
+            //     if( params.prevActionFlag===1 ) state = 2;
+            // } else {
+            //     state = 2;
             // }
         }
     }
@@ -423,10 +440,10 @@ const generateGameResponse = ( params: any ) => {
             totalStake: gameInfo.totalStake,
             spinsRemaining: gameInfo.spinsRemaining < 0 ? 0 : gameInfo.spinsRemaining ,
             freeSpinsRemaining: gameInfo.fsRemain,
-            freePurchaseSpinsRemaining: gameInfo.fspSpinsRemaining,
-            purchaseSpinsRemaining: gameInfo.purRemaining,
+            freePurchaseSpinsRemaining: gameInfo.fpsSpinsRemaining,
+            purchaseSpinsRemaining: gameInfo.psRemaining,
             freeSpinsAwarded: gameInfo.fsAwarded,
-            freePurchaseSpinsAwarded: 5-gameInfo.fspSpinsRemaining ,
+            freePurchaseSpinsAwarded: gameInfo.fpsSpinsCnt,
             spin: {
                 type: GlobalConstants.SPINTYPES[ spinType ],
                 symbols: gameInfo.symbols,
@@ -656,16 +673,16 @@ export const generateSpinResponse = ( params: any ) => {
         Object.assign( response, balanceResp );
     }
 
-    if( gameInfo.purCount>1 ) {
+    if( gameInfo.psRemaining<40 ) {
         const balanceResp = generateBalanceResponse( params.balance, params.currency );
-        const fsResp = {
+        const wrapperResp = {
             wrapper: {
                 postWager: true,
-                winProcessorRsp: null,
+                gameInstanceId: params.gameInstanceId,
                 activeBalance: "CASH"
             }
         }
-        Object.assign( balanceResp, fsResp );
+        Object.assign( balanceResp, wrapperResp );
         Object.assign( response, balanceResp );
     }
     return response;
@@ -709,8 +726,8 @@ export const generateCollectResponse = ( params:any ) => {
             totalStake: gameInfo.totalStake,
             spinsRemaining: gameInfo.spinsRemaining,
             freeSpinsRemaining: 0,
-            freePurchaseSpinsRemaining: gameInfo.fspSpinsRemaining,
-            purchaseSpinsRemaining: gameInfo.purRemaining,
+            freePurchaseSpinsRemaining: gameInfo.fpsSpinsRemaining,
+            purchaseSpinsRemaining: gameInfo.psRemaining,
             freeSpinsAwarded: 0,
             freePurchaseSpinsAwarded: 1, // gameInfo.isFreeSpin ? 1 : 0,
             spin: {
