@@ -65,7 +65,6 @@ export const getCells = () => {
             cells[ 5*i+j ] = subNumArr[ j ][ i ];
         }
     }
-
     return {
         cells : cells,
         remainCells : remainCells
@@ -112,29 +111,50 @@ export const getSymbols = ( params:any ) => {
     else if( cntRand>0.65 ) symCnt = 1;
     if( symCnt>0 ) {
         let fsCnt = 0;
+        // const disableCols = checkSymbolByCols( params.cells, params.gameMatches );
         const symbolPoss = makeRandArr( [0,1,2,3,4] );
-        const disableCols = checkSymbolByCols( params.cells, params.gameMatches );
         for( let i=0; i<symCnt; i++ ) {
             const specRand = isaac.random();
-            if( !disableCols.includes(i) ) {
-                if( hasSJ ) {
-                    if( specRand>0.834 ) symbols[ symbolPoss[i] ] = PG;
-                    else if( specRand>0.682 ) symbols[ symbolPoss[i] ] = D;
+            if( specRand>0.5 ) {
+                if( params.fsAwarded===1 ) {
+                    if( specRand>0.889 ) symbols[ symbolPoss[i] ] = PG;
+                    else if( specRand>0.692 ) symbols[ symbolPoss[i] ] = D;
+                    else if( specRand>0.575 ) symbols[ symbolPoss[i] ] = J;
+                    else symbols[ symbolPoss[i] ] = RJ;
                 } else {
                     if( params.isExtra ) {
-                        if( specRand>0.76) symbols[ symbolPoss[i] ] = PG;
-                        else if( specRand>0.59 ) symbols[ symbolPoss[i] ] = D;
-                        // else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                        if( specRand>0.883 ) symbols[ symbolPoss[i] ] = PG;
+                        else if( specRand>0.759 ) symbols[ symbolPoss[i] ] = D;
+                        else if( specRand>0.643 ) symbols[ symbolPoss[i] ] = J;
+                        else if( specRand>0.552 ) symbols[ symbolPoss[i] ] = RJ;
+                        else symbols[ symbolPoss[i] ] = FS;
                     } else {
-                        if( specRand>0.95 ) hasSJ = true, symbols[ symbolPoss[i] ] = SJ;
-                        else if( specRand>0.92 ) symbols[ symbolPoss[i] ] = RJ;
-                        else if( specRand>0.86 ) symbols[ symbolPoss[i] ] = J;
-                        else if( specRand>0.68) symbols[ symbolPoss[i] ] = PG;
-                        else if( specRand>0.55 ) symbols[ symbolPoss[i] ] = D;
-                        // else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                        if( specRand>0.881 ) symbols[ symbolPoss[i] ] = PG;
+                        else if( specRand>0.682 ) symbols[ symbolPoss[i] ] = D;
+                        else if( specRand>0.578 ) symbols[ symbolPoss[i] ] = J;
+                        else symbols[ symbolPoss[i] ] = RJ;
                     }
                 }
             }
+            // if( !disableCols.includes(i) ) {
+                // if( hasSJ ) {
+                //     if( specRand>0.834 ) symbols[ symbolPoss[i] ] = PG;
+                //     else if( specRand>0.682 ) symbols[ symbolPoss[i] ] = D;
+                // } else {
+                //     if( params.isExtra ) {
+                //         if( specRand>0.76) symbols[ symbolPoss[i] ] = PG;
+                //         else if( specRand>0.59 ) symbols[ symbolPoss[i] ] = D;
+                //         // else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                //     } else {
+                //         if( specRand>0.95 ) hasSJ = true, symbols[ symbolPoss[i] ] = SJ;
+                //         else if( specRand>0.92 ) symbols[ symbolPoss[i] ] = RJ;
+                //         else if( specRand>0.86 ) symbols[ symbolPoss[i] ] = J;
+                //         else if( specRand>0.68) symbols[ symbolPoss[i] ] = PG;
+                //         else if( specRand>0.55 ) symbols[ symbolPoss[i] ] = D;
+                //         // else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                //     }
+                // }
+            // }
         }
 
         let sjCnt = symbols.filter(symbol=>symbol===SJ).length;
@@ -177,6 +197,19 @@ export const getSymbols = ( params:any ) => {
                         const subNumbers = makeRandArr( arr ); 
                         symbols[ jInd ] = String(subNumbers[ mid ]);
                     }
+                }
+            }
+        } else if( rjCnt>1 ) {
+            console.log(`=====>>>>>>> rjCnt=${rjCnt}, symbols=[${symbols}]`)
+            while (rjCnt>1) {
+                const rjInd = symbols.indexOf(RJ);
+                if( rjInd !== -1 ) {
+                    rjCnt--;
+                    const nIdx = getFloorRandom( 15 );
+                    const start = rjInd*15;
+                    const arr = Array.from({ length: 15 }, (_, index) => start + index+1);
+                    const subNumbers = makeRandArr( arr );
+                    symbols[ rjInd ] = String(subNumbers[ nIdx ]);
                 }
             }
         }
@@ -415,7 +448,7 @@ const generateGameResponse = ( params: any ) => {
     if( gameInfo.spinsRemaining<=0 ) {
         if( gameInfo.spinsRemaining===0 ) {
             if( gameInfo.fsAwarded===1 ) {
-                state = 2, spinType=3;
+                state = 1, spinType=0;
             }
         } else {
             if( !gameInfo.isFreeSpin ) {
