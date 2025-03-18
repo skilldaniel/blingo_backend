@@ -31,7 +31,7 @@ export const addUser = async( newUser:any ) => {
         isExtra : false, // extra spin mode
         fsCount  : -1,
         purCount : -1,
-        psRemaining : 40, // // purchaseSpinsRemaining
+        psRemaining : 40, // purchaseSpinsRemaining
         fsRemain : 0, // freeSpinsRemaining
         fpsSpinsRemaining : 5, // freePurchaseSpinsRemaining
         fpsSpinsCnt : 0, // freePurchaseSpinsAwarded

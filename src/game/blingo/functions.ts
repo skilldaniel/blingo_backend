@@ -2,7 +2,7 @@ import isaac from 'isaac';
 import * as GlobalConstants from "@/game/blingo/constants";
 
 const getFloorRandom = ( len:number, flag="i" ) => {
-    if( flag==="m ") return Math.floor( Math.random()*len );
+    if( flag==="m") return Math.floor( Math.random()*len );
     else return Math.floor( isaac.random()*len );
 }
 
@@ -33,8 +33,6 @@ const maxVal = 75, wild = 12, maxPs = 40;
 const generateMatchePatterns = ( cells:number[], matchesArr:number[], patternInfo:any ) => {
     const matches : any[] = [];
     if( matchesArr.length > 0 ) {
-        // console.log(`matchesArr`, matchesArr);
-        // console.log(`patternInfo`, patternInfo);
         matchesArr.forEach(( no:number, idx:number ) => {
             let pattern : number[] = [];
             patternInfo.forEach((element:any) => {
@@ -55,21 +53,18 @@ const generateMatchePatterns = ( cells:number[], matchesArr:number[], patternInf
 export const getCells = () => {
     const subNumArr : number[][] = [];
     let remainCells : number[] = [];
-    let cells: number[] = [ 5,22,42,50,71,11,19,45,54,68,8,30,39,55,72,10,17,43,59,70,2,18,36,46,64 ];
-    // cells = [ 4,26,40,60,61,14,25,35,53,65,3,19,36,51,74,8,18,45,46,75,15,27,37,50,68 ];
-    // cells = [ 13,30,33,49,65,9,24,40,48,73,1,29,39,53,69,8,25,32,54,70,5,19,36,58,67 ];
-    // cells = [ 13,16,34,56,61,8,18,40,52,62,11,29,33,47,68,15,17,36,50,69,10,24,37,54,66 ];
-    // for (let i = 0; i < 5; i++) {
-    //     const start = i*15;
-    //     let arr = Array.from({ length: 15 }, (_, index) => start + index+1);
-    //     let subNumbers = makeRandArr( arr );
-    //     subNumArr.push( subNumbers.slice( 0,5 ) );
-    // }
-    // for( let i=0; i<5; i++ ) {
-    //     for( let j=0; j<5; j++ ) {
-    //         cells[ 5*i+j ] = subNumArr[ j ][ i ];
-    //     }
-    // }
+    let cells: number[] = [];
+    for (let i = 0; i < 5; i++) {
+        const start = i*15;
+        let arr = Array.from({ length: 15 }, (_, index) => start + index+1);
+        let subNumbers = makeRandArr( arr );
+        subNumArr.push( subNumbers.slice( 0,5 ) );
+    }
+    for( let i=0; i<5; i++ ) {
+        for( let j=0; j<5; j++ ) {
+            cells[ 5*i+j ] = subNumArr[ j ][ i ];
+        }
+    }
 
     return {
         cells : cells,
@@ -101,20 +96,20 @@ export const getSymbols = ( params:any ) => {
     let symbols : string[] = [];
     let symCnt = 0;
     let hasSJ = false;
-
     for( let i=0; i<5; i++ ) {
         const start = i*15;
-        const arr = Array.from({ length: 15 }, (_, index) => start + index+1);
+        const arr = Array.from({ length: 15 }, (_, index) => start+index+1);
         const subNumbers = makeRandArr( arr );
-        symbols.push(String( subNumbers[0] ));
+        const subRand = getFloorRandom( 15 );
+        symbols.push(String( subNumbers[ subRand ] ));
     }
     
     const cntRand = isaac.random();
-    if( cntRand>0.99 ) symCnt = 5;
-    else if( cntRand>0.96 ) symCnt = 4;
-    else if( cntRand>0.91 ) symCnt = 3;
-    else if( cntRand>0.84 ) symCnt = 2;
-    else if( cntRand>0.7 ) symCnt = 1;
+    if( cntRand>0.985 ) symCnt = 5;
+    else if( cntRand>0.94 ) symCnt = 4;
+    else if( cntRand>0.89 ) symCnt = 3;
+    else if( cntRand>0.82 ) symCnt = 2;
+    else if( cntRand>0.65 ) symCnt = 1;
     if( symCnt>0 ) {
         let fsCnt = 0;
         const symbolPoss = makeRandArr( [0,1,2,3,4] );
@@ -124,19 +119,19 @@ export const getSymbols = ( params:any ) => {
             if( !disableCols.includes(i) ) {
                 if( hasSJ ) {
                     if( specRand>0.834 ) symbols[ symbolPoss[i] ] = PG;
-                    else if( specRand>0.782 ) symbols[ symbolPoss[i] ] = D;
+                    else if( specRand>0.682 ) symbols[ symbolPoss[i] ] = D;
                 } else {
                     if( params.isExtra ) {
-                        if( specRand>0.73) symbols[ symbolPoss[i] ] = PG;
-                        else if( specRand>0.62 ) symbols[ symbolPoss[i] ] = D;
-                        else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                        if( specRand>0.76) symbols[ symbolPoss[i] ] = PG;
+                        else if( specRand>0.59 ) symbols[ symbolPoss[i] ] = D;
+                        // else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
                     } else {
                         if( specRand>0.95 ) hasSJ = true, symbols[ symbolPoss[i] ] = SJ;
-                        else if( specRand>0.91 ) symbols[ symbolPoss[i] ] = RJ;
-                        else if( specRand>0.85 ) symbols[ symbolPoss[i] ] = J;
-                        else if( specRand>0.73) symbols[ symbolPoss[i] ] = PG;
-                        else if( specRand>0.62 ) symbols[ symbolPoss[i] ] = D;
-                        else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
+                        else if( specRand>0.92 ) symbols[ symbolPoss[i] ] = RJ;
+                        else if( specRand>0.86 ) symbols[ symbolPoss[i] ] = J;
+                        else if( specRand>0.68) symbols[ symbolPoss[i] ] = PG;
+                        else if( specRand>0.55 ) symbols[ symbolPoss[i] ] = D;
+                        // else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
                     }
                 }
             }
@@ -186,18 +181,7 @@ export const getSymbols = ( params:any ) => {
             }
         }
     }
-    const ftSymbols = [
-        ["J", "18", "36", "56", "61"], ["13", "25", "41", "51", "63"],["3", "19", "D", "PG", "73"],["PG", "20", "42", "57", "71"],["D", "17", "D", "46", "70"],["5", "D", "35", "52", "71"],["7", "24", "44", "53", "PG"],["8", "17", "38", "59", "68"],["9", "27", "PG", "50", "73"],["13", "PG", "J", "RJ", "67"],["9", "19", "38", "RJ", "65"],[], ["1", "24", "31", "J", "73"], ["PG", "18", "38", "51", "67"], ["11", "18", "36", "57", "65"],["15", "PG", "D", "59", "62"],["12", "19", "33", "48", "J"],["J", "21", "34", "50", "75"],["14", "22", "38", "46", "SJ"],["14", "D", "43", "52", "71"],["12", "20", "37", "51", "67"], ["2", "28", "45", "PG", "66"],["11", "21", "42", "60", "70"],["J", "18", "44", "59", "64"], ["8", "25", "44", "54", "SJ"],["2", "16", "39", "49", "72"], ["1", "22", "PG", "58", "63"],["6", "24", "PG", "48", "74"],["14", "26", "43", "PG", "69"],["14", "18", "J", "PG", "62"],["6", "26", "D", "48", "69"],["2", "22", "42", "J", "71"],["14", "D", "43", "60", "PG"],["15", "20", "35", "PG", "63"],["2", "25", "34", "53", "70"],["PG", "25", "PG", "50", "75"],["J", "16", "D", "56", "65"], ["PG", "PG", "31", "54", "75"],["3", "25", "33", "54", "PG"],["J", "28", "J", "60", "PG"],["3", "PG", "J", "J", "69"],["13", "17", "43", "47", "69"],["8", "22", "41", "52", "74"],["9", "26", "38", "57", "72"],["3", "25", "42", "52", "68"],["5", "17", "39", "PG", "71"],["8", "D", "PG", "59", "71"],["12", "19", "PG", "51", "67"],["8", "18", "PG", "57", "62"],["4", "16", "45", "D", "66"],["14", "16", "41", "54", "62"]
 
-        // ["14", "PG", "PG", "46", "70"],["13", "25", "D", "51", "73"],["3", "28", "44", "47", "71"],["PG", "PG", "43", "59", "69"],["10", "24", "33", "J", "D"],["5", "22", "38", "56", "62"],["6", "PG", "D", "50", "PG"],["1", "26", "43", "51", "64"],["13", "28", "43", "49", "J"],["12", "D", "42", "58", "75"], ["14", "27", "J", "54", "74"],[],["7", "26", "43", "60", "D"],["7", "19", "43", "47", "74"]
-
-        // ["7", "30", "J", "58", "62"],["8", "PG", "J", "58", "72"],["D", "24", "44", "48", "PG"],["7", "23", "D", "46", "67"],["PG", "16", "43", "46", "64"],["6", "24", "38", "PG", "69"],["13", "29", "J", "56", "64"],["J", "29", "39", "53", "61"],["1", "D", "33", "59", "J"],["15", "PG", "J", "52", "62"],["7", "18", "33", "PG", "PG"],[],["PG", "PG", "J", "52", "74"],["11", "26", "38", "52", "J"],["4", "PG", "PG", "49", "72"],["12", "21", "35", "SJ", "62"],["PG", "26", "32", "59", "67"],["8", "24", "J", "60", "PG"],["13", "PG", "PG", "49", "61"],["5", "28", "D", "PG", "J"],["8", "20", "D", "52", "PG"],["4", "27", "34", "59", "62"],["11", "17", "34", "59", "67"],["8", "27", "PG", "57", "65"],["5", "24", "D", "47", "J"],["9", "25", "PG", "PG", "D"],["PG", "J", "J", "D", "72"],["2", "26", "D", "54", "75"]
-
-        // ["11", "28", "D", "49", "68"],["D", "23", "D", "57", "74"],["9", "J", "J", "59", "74"],["1", "J", "J", "59", "69"],["9", "28", "44", "60", "J"],["10", "PG", "32", "60", "62"],["14", "24", "FS", "RJ", "PG"],["15", "28", "PG", "RJ", "74"],["9", "20", "39", "PG", "63"],["12", "30", "34", "J", "65"],["15", "19", "45", "60", "69"],["1", "27", "40", "60", "70"],["3", "18", "PG", "48", "PG"],["PG", "28", "J", "54", "73"],["3", "PG", "J", "53", "71"],[],["4", "J", "PG", "60", "72"],["PG", "18", "J", "48", "64"],["J", "26", "D", "47", "J"],["15", "29", "42", "60", "72"],["3", "20", "36", "54", "67"],["PG", "22", "45", "PG", "62"],["6", "17", "41", "51", "63"],["12", "21", "38", "53", "61"],["11", "26", "D", "52", "70"],["7", "16", "40", "50", "PG"],["11", "25", "D", "PG", "D"],["12", "18", "31", "52", "68"],["PG", "J", "38", "51", "PG"],["13", "29", "J", "54", "62"],["8", "J", "D", "56", "70"]
-
-    ]; 
-    symbols = ftSymbols[ ftid ];
-    ftid++;
     return symbols;
 }
 
@@ -219,7 +203,7 @@ export const calcSpinPrice = ( params:any ) => {
     const rtps = [ 0.96, 0.94, 0.92 ];
     const remainCell = params.totalMatches.length;
     const price = 
-        params.totalMatches.length===25 || params.patternLength===0 || params.patternLength===12 ? 0.01 : 
+        params.totalMatches.length===25 || params.patternLength===0 || params.patternLength===12 ? Math.round(params.stake*2)/100 : 
         Math.round( 100*params.stake*(maxVal-remainCell) / ((25-remainCell)*rtps[params.rtp-1]*(12-params.patternLength)) )/100;
 
     console.log(`===> spinPrice ${price}=${ params.stake }*${(maxVal-remainCell)}/(${25-remainCell}*${rtps[ params.rtp-1 ]}*${ 12-params.patternLength }), length=${ remainCell }`);
@@ -435,19 +419,13 @@ const generateGameResponse = ( params: any ) => {
             }
         } else {
             if( !gameInfo.isFreeSpin ) {
-                console.log(`else case :: symbols=[${gameInfo.symbols}], isExtra=${gameInfo.isExtra}, isPurchase=${gameInfo.isPurchase}`)
+                // console.log(`else case :: symbols=[${gameInfo.symbols}], isExtra=${gameInfo.isExtra}, isPurchase=${gameInfo.isPurchase}`)
                 if( gameInfo.isExtra ) {
                     state = 2, spinType = 1; // state = 3
                 }
                 if( gameInfo.isPurchase ) {
                     state = 3, spinType=2;
                 }
-                // if( params.isRS ) {
-                //     spinType = 4;
-                //     if( params.prevActionFlag===1 ) state = 2;
-                // } else {
-                //     state = 2;
-                // }
             }
         }
     }
