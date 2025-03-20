@@ -1,5 +1,6 @@
 import isaac from 'isaac';
 import * as GlobalConstants from "@/game/blingo/constants";
+import { ar } from 'vitest/dist/chunks/reporters.D7Jzd9GS';
 
 const getFloorRandom = ( len:number, flag="i" ) => {
     if( flag==="m") return Math.floor( Math.random()*len );
@@ -65,6 +66,7 @@ export const getCells = () => {
             cells[ 5*i+j ] = subNumArr[ j ][ i ];
         }
     }
+    console.log(`cells=[${cells}]`);
     return {
         cells : cells,
         remainCells : remainCells
@@ -94,12 +96,27 @@ export const getSymbols = ( params:any ) => {
     const PG = "PG", RJ="RJ", SJ="SJ", J="J", FS="FS", D="D";
     let symbols : string[] = [];
     let symCnt = 0;
-    let hasSJ = false;
+    const symbs:number[][] = [ [], [], [], [], [] ];
+    params.cells.forEach((cell:number, ind:number) => {
+        symbs[ ind%5 ].push( cell );
+    })
+    console.log(`spinsRemaining=${params.spinsRemaining}, isExtra=${params.isExtra}, symbs=`, symbs);
+
     for( let i=0; i<5; i++ ) {
-        const start = i*15;
-        const arr = Array.from({ length: 15 }, (_, index) => start+index+1);
+        const numPerCol = 15;
+        const start = i*numPerCol;
+        const arr = Array.from({ length: numPerCol }, (_, index) => start+index+1);        
         const subNumbers = makeRandArr( arr );
-        const subRand = getFloorRandom( 15 );
+        let limit = 0;
+
+        for( let j=0; j<numPerCol; j++ ) {
+            if( !symbs[i].includes(subNumbers[j]) ) {
+                subNumbers.push( subNumbers[j] );
+                limit++;
+            }
+            if( limit===4 ) break;
+        }
+        const subRand = getFloorRandom( numPerCol+limit );
         symbols.push(String( subNumbers[ subRand ] ));
     }
     
@@ -108,53 +125,32 @@ export const getSymbols = ( params:any ) => {
     else if( cntRand>0.94 ) symCnt = 4;
     else if( cntRand>0.89 ) symCnt = 3;
     else if( cntRand>0.82 ) symCnt = 2;
-    else if( cntRand>0.65 ) symCnt = 1;
+    else if( cntRand>0.61 ) symCnt = 1;
     if( symCnt>0 ) {
-        let fsCnt = 0;
-        // const disableCols = checkSymbolByCols( params.cells, params.gameMatches );
         const symbolPoss = makeRandArr( [0,1,2,3,4] );
         for( let i=0; i<symCnt; i++ ) {
             const specRand = isaac.random();
             if( specRand>0.5 ) {
                 if( params.fsAwarded===1 ) {
-                    if( specRand>0.889 ) symbols[ symbolPoss[i] ] = PG;
+                    if( specRand>0.836 ) symbols[ symbolPoss[i] ] = PG;
                     else if( specRand>0.692 ) symbols[ symbolPoss[i] ] = D;
                     else if( specRand>0.575 ) symbols[ symbolPoss[i] ] = J;
                     else symbols[ symbolPoss[i] ] = RJ;
                 } else {
                     if( params.isExtra ) {
-                        if( specRand>0.883 ) symbols[ symbolPoss[i] ] = PG;
-                        else if( specRand>0.759 ) symbols[ symbolPoss[i] ] = D;
-                        else if( specRand>0.643 ) symbols[ symbolPoss[i] ] = J;
+                        if( specRand>0.884 ) symbols[ symbolPoss[i] ] = PG;
+                        else if( specRand>0.764 ) symbols[ symbolPoss[i] ] = D;
+                        else if( specRand>0.648 ) symbols[ symbolPoss[i] ] = J;
                         else if( specRand>0.552 ) symbols[ symbolPoss[i] ] = RJ;
                         else symbols[ symbolPoss[i] ] = FS;
                     } else {
                         if( specRand>0.881 ) symbols[ symbolPoss[i] ] = PG;
-                        else if( specRand>0.682 ) symbols[ symbolPoss[i] ] = D;
-                        else if( specRand>0.578 ) symbols[ symbolPoss[i] ] = J;
+                        else if( specRand>0.694 ) symbols[ symbolPoss[i] ] = D;
+                        else if( specRand>0.564 ) symbols[ symbolPoss[i] ] = J;
                         else symbols[ symbolPoss[i] ] = RJ;
                     }
                 }
             }
-            // if( !disableCols.includes(i) ) {
-                // if( hasSJ ) {
-                //     if( specRand>0.834 ) symbols[ symbolPoss[i] ] = PG;
-                //     else if( specRand>0.682 ) symbols[ symbolPoss[i] ] = D;
-                // } else {
-                //     if( params.isExtra ) {
-                //         if( specRand>0.76) symbols[ symbolPoss[i] ] = PG;
-                //         else if( specRand>0.59 ) symbols[ symbolPoss[i] ] = D;
-                //         // else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
-                //     } else {
-                //         if( specRand>0.95 ) hasSJ = true, symbols[ symbolPoss[i] ] = SJ;
-                //         else if( specRand>0.92 ) symbols[ symbolPoss[i] ] = RJ;
-                //         else if( specRand>0.86 ) symbols[ symbolPoss[i] ] = J;
-                //         else if( specRand>0.68) symbols[ symbolPoss[i] ] = PG;
-                //         else if( specRand>0.55 ) symbols[ symbolPoss[i] ] = D;
-                //         // else if( params.purCount===-1 && fsCnt===0 ) fsCnt++, symbols[ symbolPoss[i] ] = FS;
-                //     }
-                // }
-            // }
         }
 
         let sjCnt = symbols.filter(symbol=>symbol===SJ).length;
@@ -237,7 +233,7 @@ export const calcSpinPrice = ( params:any ) => {
     const remainCell = params.totalMatches.length;
     const price = 
         params.totalMatches.length===25 || params.patternLength===0 || params.patternLength===12 ? Math.round(params.stake*2)/100 : 
-        Math.round( 100*params.stake*(maxVal-remainCell) / ((25-remainCell)*rtps[params.rtp-1]*(12-params.patternLength)) )/100;
+        Math.round(100*params.stake*( maxVal-remainCell )/((25-remainCell)*rtps[params.rtp-1]*(12-params.patternLength)))/100;
 
     console.log(`===> spinPrice ${price}=${ params.stake }*${(maxVal-remainCell)}/(${25-remainCell}*${rtps[ params.rtp-1 ]}*${ 12-params.patternLength }), length=${ remainCell }`);
     return price;
@@ -606,6 +602,9 @@ export const generateBonusSpins = ( params:any ) => {
         }
     }
     const payLineInfo = checkPayLines( isExpand ? expReelMrx : reelMrx, params.stake );
+    // console.log(`maxCnt=${ maxCnt }, cntRand=${ cntRand }, reelMrx=`, reelMrx);
+    // console.log(`payInfo :: `, payLineInfo.payInfo)
+    // console.log(`bonusProfit :: `, payLineInfo.totalProfit)
     return {
         reelMrx : reelMrx,
         payLineInfo : payLineInfo.payInfo,

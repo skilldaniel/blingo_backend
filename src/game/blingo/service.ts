@@ -99,19 +99,11 @@ export const blingoService = {
                 };
 
                 if( action==="spin" ) {
-                    const bsParams = {
-                        winSymbol : 3,
-                        stake : userInfo.gameStatus.stake
-                    }
-                    bonusReelInfo = Functions.generateBonusSpins( bsParams );
-                    console.log(``)
-
                     const symParam: any = {
                         cells : userInfo.gameStatus.cells,
-                        purCount : userInfo.gameStatus.purCount,
-                        gameMatches : [],
                         isExtra: userInfo.gameStatus.isExtra,
-                        fsAwarded : userInfo.gameStatus.fsAwarded
+                        fsAwarded : userInfo.gameStatus.fsAwarded,
+                        spinsRemaining : userInfo.gameStatus.spinsRemaining
                     };
                     const symbols = Functions.getSymbols( symParam );
                     const _hasJ = symbols.includes(_J);
@@ -257,7 +249,7 @@ export const blingoService = {
                         }
                     }
 
-                    // console.log(`-->>>-- spinRemain`, userInfo.gameStatus.spinsRemaining, userInfo.gameStatus.fsRemain, `symbols=[${symbols}], spinMatches=[${userInfo.gameStatus.spinMatches}], isFreeSpin=${userInfo.gameStatus.isFreeSpin}`);
+                    console.log(`------>>> spinRemain`, userInfo.gameStatus.spinsRemaining, `symbols=[${symbols}], spinMatches=[${userInfo.gameStatus.spinMatches}], isFreeSpin=${userInfo.gameStatus.isFreeSpin}`);
                 }
                 if( action==="chooseCell" ) {
                     if( userInfo.gameStatus.chooseTime>0 ) {
