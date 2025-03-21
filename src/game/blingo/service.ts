@@ -523,7 +523,7 @@ export const blingoService = {
             const userInfo : any = {};
             const gameCode = gameStr[0];
                         
-            userInfo["token"] = Functions.generateFunToken();
+            userInfo.token = Functions.generateFunToken();
             userInfo.balance = 10000;
             userInfo.property = {
                 rtp : rtp,
@@ -536,7 +536,7 @@ export const blingoService = {
             };
 
             await Models.addUser( userInfo );
-            const hashVals = Functions.djb2Hash( userInfo["token"] );
+            const hashVals = Functions.djb2Hash( userInfo.token );
 
             responseProvider = {
                 error: 0,

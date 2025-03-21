@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Dragon Blingo</title>
+        <link rel="icon" href="./assets/favicon-Cg38_GY4.ico" />
+        <style>
+            html,
+            body {
+                overflow: hidden !important;
+                height: 100% !important;
+                margin: 0;
+                padding: 0;
+                background-color: #000000;
+                position: relative;
+                font-family: 'Roboto', sans-serif;
+            }
+            canvas {
+                margin: 0;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+            }
+            .fullscreen {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+            }
+            .fullscreen canvas {
+                height: 100%;
+                position: absolute;
+                -webkit-transform: translate(-50%, -50%);
+                -moz-transform: translate(-50%, -50%);
+                transform: translate(-50%, -50%);
+                top: 50%;
+                left: 50%;
+            }
+            .wrapper {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                width: 100%;
+                justify-content: center;
+                align-items: center;
+            }
+            .loader {
+                border: 3px solid #ff0054;
+                border-radius: 50%;
+                border-right-color: transparent;
+                border-bottom-color: transparent;
+                width: 80px;
+                height: 80px;
+                animation-name: loading;
+                animation-duration: 700ms;
+                animation-iteration-count: infinite;
+                animation-timing-function: linear;
+                z-index: 10;
+            }
+            .test_buttons {
+                /* display: none; */
+                position: absolute;
+                z-index: 10;
+            }
+            #playMusic {
+                display: none;
+            }
+            @keyframes loading {
+                from {
+                    transform: rotate(0deg);
+                }
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+            @font-face {
+                font-family: 'Gang';
+                src: url('./assets/preload/Font/gang.ttf') format('ttf');
+            }
+            @font-face {
+                font-family: 'Roboto';
+                src: url('./assets/game/Font/Roboto.woff') format('woff');
+            }
+        </style>
+      <script type="module" crossorigin src="./assets/index-NjCIKo9U.js"></script>
+      <link rel="modulepreload" crossorigin href="./assets/vendor-DyXvL_s4.js">
+      <link rel="modulepreload" crossorigin href="./assets/typed-signals-Bqx_1MKE.js">
+      <link rel="modulepreload" crossorigin href="./assets/pixi-core-BNLk25lu.js">
+      <link rel="modulepreload" crossorigin href="./assets/pixi-sound-JzzuYZfM.js">
+      <link rel="modulepreload" crossorigin href="./assets/gsap-CuQWb6P_.js">
+      <link rel="modulepreload" crossorigin href="./assets/ui-Ch5GN6YP.js">
+    </head>
+    <body>
+        <!-- Test Buttons -->
+        <div class="test_buttons">
+            <button id="3_blingo">3 Blingos</button>
+            <button id="4_blingo">4 Blingos</button>
+            <button id="5_blingo">5 Blingos</button>
+            <button id="6_blingo">6 Blingos</button>
+            <button id="7_blingo">7 Blingos</button>
+            <button id="8_blingo">8 Blingos</button>
+            <button id="9_blingo">9 Blingos</button>
+            <button id="10_blingo">10 Blingos</button>
+            <button id="full_house">Full House</button>
+        </div>
+        <!-- Button for play music -->
+        <button id="playMusic">playMusic</button>
+        <!-- This is a component for loading -->
+        <div class="wrapper">
+            <div class="loader"></div>
+        </div>
+    </body>
+</html>
