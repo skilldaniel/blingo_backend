@@ -5,7 +5,6 @@ import express, { type Express } from "express";
 import { pino } from "pino";
 
 import errorHandler from "@/common/middleware/errorHandler";
-import { env } from "@/common/utils/envConfig";
 import { connect } from '@/common/models';
 import * as Routers from "@/game/router";
 
@@ -14,8 +13,9 @@ const app: Express = express();
 
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
-app.get("/blingo", async( req, res) => {
-    res.render( "blingo/blingo" );
+app.get("/slingo", async( req, res) => {
+    console.log(`here?`)
+    res.render( "slingo/index" );
 });
 
 connect(String(process.env.DBNAME)).then(async (loaded) => {

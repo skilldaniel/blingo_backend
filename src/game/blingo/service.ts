@@ -62,6 +62,7 @@ export const blingoService = {
                     balance : userInfo.balance,
                     currency : userInfo.property.currency,
                     rtp : rtps[ rtp ],
+                    userId : actionParams.body.userId,
                 };
 
                 response = Functions.generateCurrentGameResponse( curParams );
@@ -79,6 +80,7 @@ export const blingoService = {
                     userId  : actionParams.body.userId,
                     ticketId : actionParams.body.ticketId,
                     currency : actionParams.body.currencyCode,
+                    gameId : actionParams.body.gameInstanceId,
                 };
                 response = Functions.generateStartGameResponse( gameParms );
                 await Models.updateUserBalance( userInfo.token, userInfo.balance );
@@ -102,6 +104,7 @@ export const blingoService = {
                     const symParam: any = {
                         cells : userInfo.gameStatus.cells,
                         isExtra: userInfo.gameStatus.isExtra,
+                        isPurchase: userInfo.gameStatus.isPurchase,
                         fsAwarded : userInfo.gameStatus.fsAwarded,
                         spinsRemaining : userInfo.gameStatus.spinsRemaining
                     };
@@ -519,9 +522,8 @@ export const blingoService = {
         if( rtp === 1 || rtp === 2 || rtp === 3) {
             const userInfo : any = {};
             const gameCode = gameStr[0];
-            
-            // userInfo["token"] = Functions.generateFunToken();
-            userInfo.token = "fun@yyfexssupw1m3pohr1h" ;
+                        
+            userInfo["token"] = Functions.generateFunToken();
             userInfo.balance = 10000;
             userInfo.property = {
                 rtp : rtp,
@@ -530,15 +532,18 @@ export const blingoService = {
                 user : launcher.user,
                 currency : launcher.currency,
                 mode : launcher.mode==="real" ? 1 : 0,
-                lastId : "lastId"
+                lastId : ""
             };
 
             await Models.addUser( userInfo );
+            const hashVals = Functions.djb2Hash( userInfo["token"] );
+
             responseProvider = {
                 error: 0,
                 description: "Success",
                 result: {
-                    url: `http://${ process.env.HOST }:${ process.env.PORT }/blingo?gameId=slingo-starburst&gameMode=DEMO`
+                    url: `http://${ process.env.HOST }:${ process.env.SERVER_PORT }/slingo?token=${userInfo.token}&userId=${ hashVals.userId}&gameId=${ hashVals.gameId }`
+                    // url: `http://${ process.env.HOST }:${ process.env.FRONT_PORT }/blingo?gameId=slingo-starburst&gameMode=DEMO`
                 }
             }
         } else {

@@ -1,6 +1,5 @@
 import isaac from 'isaac';
 import * as GlobalConstants from "@/game/blingo/constants";
-import { ar } from 'vitest/dist/chunks/reporters.D7Jzd9GS';
 
 const getFloorRandom = ( len:number, flag="i" ) => {
     if( flag==="m") return Math.floor( Math.random()*len );
@@ -19,7 +18,26 @@ export const generateFunToken = () => {
     round++;
     if (round > 100000) round = 0;
     const session = "fun@" + (Math.random() + 1).toString(36).substring(2) + String(round.toString(36)) + (Date.now().toString(36));
+
     return session;
+}
+
+export const djb2Hash = ( str:string ) => {
+    let userId = 5781;
+    let gameId = 6530;
+    for (let i = 0; i < str.length; i++) {
+        userId = (userId * 33) ^ str.charCodeAt(i);
+        gameId = (gameId * 33) ^ str.charCodeAt(i);
+    }
+    userId = (userId >>> 0) % 100000000;
+    gameId = (gameId >>> 0) % 100000000;
+    userId = Number(userId.toString().padStart(8, '0'));
+    gameId = Number(gameId.toString().padStart(8, '0'));
+    
+    return{ 
+        userId : userId,
+        gameId : gameId
+    }
 }
 
 export const getCurrentTime = () => {
@@ -100,7 +118,7 @@ export const getSymbols = ( params:any ) => {
     params.cells.forEach((cell:number, ind:number) => {
         symbs[ ind%5 ].push( cell );
     })
-    console.log(`spinsRemaining=${params.spinsRemaining}, isExtra=${params.isExtra}, symbs=`, symbs);
+    console.log(`spinsRemaining=${params.spinsRemaining}, isExtra=${params.isExtra}`);
 
     for( let i=0; i<5; i++ ) {
         const numPerCol = 15;
@@ -132,21 +150,23 @@ export const getSymbols = ( params:any ) => {
             const specRand = isaac.random();
             if( specRand>0.5 ) {
                 if( params.fsAwarded===1 ) {
-                    if( specRand>0.836 ) symbols[ symbolPoss[i] ] = PG;
-                    else if( specRand>0.692 ) symbols[ symbolPoss[i] ] = D;
-                    else if( specRand>0.575 ) symbols[ symbolPoss[i] ] = J;
-                    else symbols[ symbolPoss[i] ] = RJ;
+                    if( specRand>0.816 ) symbols[ symbolPoss[i] ] = PG;
+                    else if( specRand>0.654 ) symbols[ symbolPoss[i] ] = D;
+                    else if( !params.isExtra && ( params.isPurchase )) {
+                        if( specRand>0.575 ) symbols[ symbolPoss[i] ] = J;
+                        else symbols[ symbolPoss[i] ] = RJ;
+                    }
                 } else {
                     if( params.isExtra ) {
-                        if( specRand>0.884 ) symbols[ symbolPoss[i] ] = PG;
-                        else if( specRand>0.764 ) symbols[ symbolPoss[i] ] = D;
-                        else if( specRand>0.648 ) symbols[ symbolPoss[i] ] = J;
-                        else if( specRand>0.552 ) symbols[ symbolPoss[i] ] = RJ;
-                        else symbols[ symbolPoss[i] ] = FS;
+                        if( specRand>0.843 ) symbols[ symbolPoss[i] ] = PG;
+                        else if( specRand>0.684 ) symbols[ symbolPoss[i] ] = D;
                     } else {
-                        if( specRand>0.881 ) symbols[ symbolPoss[i] ] = PG;
-                        else if( specRand>0.694 ) symbols[ symbolPoss[i] ] = D;
-                        else if( specRand>0.564 ) symbols[ symbolPoss[i] ] = J;
+                        if( params.spinsRemaining>0 ) {
+                            if( specRand>0.946 ) symbols[ symbolPoss[i] ] = FS;
+                        }
+                        if( specRand>0.866 ) symbols[ symbolPoss[i] ] = PG;
+                        else if( specRand>0.695 ) symbols[ symbolPoss[i] ] = D;
+                        else if( specRand>0.572 ) symbols[ symbolPoss[i] ] = J;
                         else symbols[ symbolPoss[i] ] = RJ;
                     }
                 }
@@ -233,9 +253,9 @@ export const calcSpinPrice = ( params:any ) => {
     const remainCell = params.totalMatches.length;
     const price = 
         params.totalMatches.length===25 || params.patternLength===0 || params.patternLength===12 ? Math.round(params.stake*2)/100 : 
-        Math.round(100*params.stake*( maxVal-remainCell )/((25-remainCell)*rtps[params.rtp-1]*(12-params.patternLength)))/100;
+        Math.round(100*params.stake*( 85-remainCell )/((25-remainCell)*rtps[params.rtp-1]*(12-params.patternLength)))/100;
 
-    console.log(`===> spinPrice ${price}=${ params.stake }*${(maxVal-remainCell)}/(${25-remainCell}*${rtps[ params.rtp-1 ]}*${ 12-params.patternLength }), length=${ remainCell }`);
+    console.log(`===> spinPrice ${price}=${ params.stake }*${(85-remainCell)}/(${25-remainCell}*${rtps[ params.rtp-1 ]}*${ 12-params.patternLength }), length=${ remainCell }`);
     return price;
 }
 
@@ -288,7 +308,7 @@ export const generateStartGameResponse = (params: any) => {
     const response = {
         game: {
             userId: params.userId,
-            gameInstanceId: 88776505,
+            gameInstanceId: params.gameId,
             currencyCode: params.currency,
             state: "STANDARD_SPIN",
             action: "SPIN",
@@ -522,15 +542,15 @@ export const generateBonusSpins = ( params:any ) => {
     let isExpand = false;
     let maxCnt = 1;
     const maxRules : { [ key:number ] : number[] } = {
-        3 : [ 0.6, 0.9 ],
+        3 : [ 0.68, 0.91 ],
         4 : [ 0.65, 0.89 ],
         5 : [ 0.65, 0.86 ],
-        6 : [ 0.5, 0.83 ],
+        6 : [ 0.53, 0.83 ],
         7 : [ 0.5, 0.8 ],
         8 : [ 0.45, 0.75 ],
-        9 : [ 0.35, 0.65 ],
-        10 : [ 0.35, 0.65 ],
-        12 : [ 0.35, 0.65 ]
+        9 : [ 0.38, 0.69 ],
+        10 : [ 0.37, 0.68 ],
+        12 : [ 0.36, 0.66 ]
     }
     const cntRand = isaac.random();
     const fullReels = [ 3,4,5,6,7,8 ];
@@ -602,9 +622,7 @@ export const generateBonusSpins = ( params:any ) => {
         }
     }
     const payLineInfo = checkPayLines( isExpand ? expReelMrx : reelMrx, params.stake );
-    // console.log(`maxCnt=${ maxCnt }, cntRand=${ cntRand }, reelMrx=`, reelMrx);
-    // console.log(`payInfo :: `, payLineInfo.payInfo)
-    // console.log(`bonusProfit :: `, payLineInfo.totalProfit)
+
     return {
         reelMrx : reelMrx,
         payLineInfo : payLineInfo.payInfo,
@@ -2750,7 +2768,7 @@ export const generateCurrentGameResponse = ( params:any ) => {
             currencyCode: params.currency
         },
         game: {
-            userId: 24177383,
+            userId: params.userId,
             ticket: {
                 id: 100,
                 rows: 5,
